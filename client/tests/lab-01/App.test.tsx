@@ -26,3 +26,29 @@ describe('App', () => {
     expect(screen.getByText(/unable to connect to toktickit api/i)).toBeInTheDocument()
   })
 })
+it('shows Online and the seeded categories on success', async () => {
+  const mockCategories = [
+    { id: 1, name: 'Account and Access' },
+    { id: 2, name: 'Hardware' },
+    { id: 3, name: 'Software' },
+    { id: 4, name: 'Network' },
+  ]
+
+  vi.spyOn(global, 'fetch')
+    .mockResolvedValueOnce({ ok: true } as Response) // health check
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => mockCategories,
+    } as Response) // categories
+
+  render(<App />)
+  fireEvent.click(screen.getByRole('button', { name: /check system/i }))
+
+  await waitFor(() => {
+    expect(screen.getByText(/system status: online/i)).toBeInTheDocument()
+  })
+
+  for (const cat of mockCategories) {
+    expect(screen.getByText(cat.name)).toBeInTheDocument()
+  }
+})
