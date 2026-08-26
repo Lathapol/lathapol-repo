@@ -1,61 +1,36 @@
-import { useState } from 'react'
-import { checkSystem } from './api'
-import type { Category } from './api'
+import { useRequester } from './context/RequesterContext'
+import RequesterSelection from './pages/RequesterSelection'
 import './App.css'
 
-type UiState = 'idle' | 'loading' | 'success' | 'error'
-
 function App() {
-  const [state, setState] = useState<UiState>('idle')
-  const [categories, setCategories] = useState<Category[]>([])
-  const [errorMessage, setErrorMessage] = useState('')
+  const { requester, setRequester } = useRequester()
 
-  async function handleCheck() {
-    setState('loading')
-    setErrorMessage('')
-
-    try {
-      const result = await checkSystem()
-      setCategories(result.categories)
-      setState('success')
-    } catch (err) {
-      setErrorMessage('Unable to connect to TokTickIT API')
-      setState('error')
-    }
+  if (!requester) {
+    return <RequesterSelection onContinue={() => {}} />
   }
 
   return (
-    <div className="container py-5" style={{ maxWidth: 640 }}>
-      <h1 className="h3 mb-4">
-        TokTickIT <span className="text-success">IT Service Desk</span>
-      </h1>
-
-      <button
-        className="btn btn-success"
-        onClick={handleCheck}
-        disabled={state === 'loading'}
-      >
-        {state === 'loading' ? 'Loading…' : 'Check System'}
-      </button>
-
-      {state === 'success' && (
-        <div className="mt-4">
-          <p className="fw-bold text-success">System Status: Online</p>
-          <p className="fw-semibold">Supported Request Categories:</p>
-          <ul>
-            {categories.map((cat) => (
-              <li key={cat.id}>{cat.name}</li>
-            ))}
-          </ul>
+    <div className="container py-4">
+      <div className="d-flex justify-content-between align-items-center mb-4">
+        <h1 className="h4 mb-0">
+          TokTickIT <span className="text-success">IT Service Desk</span>
+        </h1>
+        <div>
+          <span className="me-3">
+            Logged in as: <strong>{requester.name}</strong>
+          </span>
+          <button
+            className="btn btn-outline-secondary btn-sm"
+            onClick={() => setRequester(null)}
+          >
+            Change Requester
+          </button>
         </div>
-      )}
+      </div>
 
-      {state === 'error' && (
-        <div className="mt-4">
-          <p className="fw-bold text-danger">System Status: Offline</p>
-          <p>{errorMessage}</p>
-        </div>
-      )}
+      <p className="text-muted">
+        My Tickets and Create Ticket screens will go here (Issues 4-6).
+      </p>
     </div>
   )
 }
