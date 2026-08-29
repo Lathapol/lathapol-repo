@@ -38,3 +38,62 @@ export async function fetchRequesters(): Promise<Requester[]> {
   }
   return res.json()
 }
+
+export interface RelatedSystem {
+  id: number
+  name: string
+}
+
+export async function fetchRelatedSystems(): Promise<RelatedSystem[]> {
+  const res = await fetch(`${API_URL}/api/related-systems`)
+  if (!res.ok) throw new Error('Failed to fetch related systems')
+  return res.json()
+}
+
+export interface CreateTicketInput {
+  requesterId: number
+  categoryId: number
+  relatedSystemId: number
+  summary: string
+  description: string
+  requestedPriority: 'LOW' | 'MEDIUM' | 'HIGH'
+}
+
+export interface Ticket {
+  id: number
+  ticketNumber: string
+  requesterId: number
+  categoryId: number
+  relatedSystemId: number
+  summary: string
+  description: string
+  requestedPriority: string
+  currentStatus: string
+  createdAt: string
+}
+
+export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
+  const res = await fetch(`${API_URL}/api/tickets`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  })
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    throw new Error(data?.error?.message ?? 'Failed to create ticket')
+  }
+
+  return res.json()
+}
+
+export interface Category {
+  id: number
+  name: string
+}
+
+export async function fetchCategories(): Promise<Category[]> {
+  const res = await fetch(`${API_URL}/api/categories`)
+  if (!res.ok) throw new Error('Failed to fetch categories')
+  return res.json()
+}
