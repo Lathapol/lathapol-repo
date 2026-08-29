@@ -1,36 +1,59 @@
+import { useState } from 'react'
 import { useRequester } from './context/RequesterContext'
 import RequesterSelection from './pages/RequesterSelection'
+import CreateTicket from './pages/CreateTicket'
 import './App.css'
+
+type Page = 'myTickets' | 'createTicket'
 
 function App() {
   const { requester, setRequester } = useRequester()
+  const [page, setPage] = useState<Page>('myTickets')
 
   if (!requester) {
     return <RequesterSelection onContinue={() => {}} />
   }
 
   return (
-    <div className="container py-4">
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h1 className="h4 mb-0">
-          TokTickIT <span className="text-success">IT Service Desk</span>
-        </h1>
-        <div>
-          <span className="me-3">
-            Logged in as: <strong>{requester.name}</strong>
-          </span>
-          <button
-            className="btn btn-outline-secondary btn-sm"
-            onClick={() => setRequester(null)}
-          >
-            Change Requester
-          </button>
+    <div>
+      <nav className="navbar navbar-expand" style={{ backgroundColor: '#006B3C' }}>
+        <div className="container">
+          <span className="navbar-brand text-white fw-bold">TokTickIT</span>
+          <div className="d-flex gap-3">
+            <button
+              className={`btn btn-sm ${page === 'myTickets' ? 'btn-light' : 'btn-outline-light'}`}
+              onClick={() => setPage('myTickets')}
+            >
+              My Tickets
+            </button>
+            <button
+              className={`btn btn-sm ${page === 'createTicket' ? 'btn-light' : 'btn-outline-light'}`}
+              onClick={() => setPage('createTicket')}
+            >
+              Create Ticket
+            </button>
+          </div>
+          <div className="ms-auto text-white d-flex align-items-center gap-3">
+            <span>
+              Logged in as: <strong>{requester.name}</strong>
+            </span>
+            <button
+              className="btn btn-sm btn-outline-light"
+              onClick={() => setRequester(null)}
+            >
+              Change Requester
+            </button>
+          </div>
         </div>
-      </div>
+      </nav>
 
-      <p className="text-muted">
-        My Tickets and Create Ticket screens will go here (Issues 4-6).
-      </p>
+      {page === 'myTickets' && (
+        <div className="container py-5 text-muted text-center">
+          My Tickets screen coming in Issue 5.
+        </div>
+      )}
+
+      {page === 'createTicket' && <CreateTicket />}
     </div>
   )
 }
