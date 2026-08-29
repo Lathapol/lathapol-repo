@@ -1,14 +1,15 @@
-import { useState } from 'react'
-import { useRequester } from './context/RequesterContext'
-import RequesterSelection from './pages/RequesterSelection'
-import CreateTicket from './pages/CreateTicket'
-import './App.css'
+﻿import { useState } from "react"
+import { useRequester } from "./context/RequesterContext"
+import RequesterSelection from "./pages/RequesterSelection"
+import CreateTicket from "./pages/CreateTicket"
+import MyTickets from "./pages/MyTickets"
+import "./App.css"
 
-type Page = 'myTickets' | 'createTicket'
+type Page = "myTickets" | "createTicket"
 
 function App() {
   const { requester, setRequester } = useRequester()
-  const [page, setPage] = useState<Page>('myTickets')
+  const [page, setPage] = useState<Page>("myTickets")
 
   if (!requester) {
     return <RequesterSelection onContinue={() => {}} />
@@ -16,19 +17,19 @@ function App() {
 
   return (
     <div>
-      <nav className="navbar navbar-expand" style={{ backgroundColor: '#006B3C' }}>
+      <nav className="navbar navbar-expand" style={{ backgroundColor: "#006B3C" }}>
         <div className="container">
           <span className="navbar-brand text-white fw-bold">TokTickIT</span>
           <div className="d-flex gap-3">
             <button
-              className={`btn btn-sm ${page === 'myTickets' ? 'btn-light' : 'btn-outline-light'}`}
-              onClick={() => setPage('myTickets')}
+              className={`btn btn-sm ${page === "myTickets" ? "btn-light" : "btn-outline-light"}`}
+              onClick={() => setPage("myTickets")}
             >
               My Tickets
             </button>
             <button
-              className={`btn btn-sm ${page === 'createTicket' ? 'btn-light' : 'btn-outline-light'}`}
-              onClick={() => setPage('createTicket')}
+              className={`btn btn-sm ${page === "createTicket" ? "btn-light" : "btn-outline-light"}`}
+              onClick={() => setPage("createTicket")}
             >
               Create Ticket
             </button>
@@ -47,13 +48,8 @@ function App() {
         </div>
       </nav>
 
-      {page === 'myTickets' && (
-        <div className="container py-5 text-muted text-center">
-          My Tickets screen coming in Issue 5.
-        </div>
-      )}
-
-      {page === 'createTicket' && <CreateTicket />}
+      {page === "myTickets" && <MyTickets onCreateTicket={() => setPage("createTicket")} />}
+      {page === "createTicket" && <CreateTicket />}
     </div>
   )
 }
