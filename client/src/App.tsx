@@ -1,60 +1,63 @@
-import { useState } from 'react'
-import { checkSystem } from './api'
-import type { Category } from './api'
-import './App.css'
+﻿import { useState } from "react"
+import { useRequester } from "./context/RequesterContext"
+import RequesterSelection from "./pages/RequesterSelection"
+import CreateTicket from "./pages/CreateTicket"
+import MyTickets from "./pages/MyTickets"
+import TicketDetail from "./pages/TicketDetail"
+import "./App.css"
 
-type UiState = 'idle' | 'loading' | 'success' | 'error'
+type Page = { type: "myTickets" } | { type: "createTicket" } | { type: "ticketDetail"; id: number }
 
 function App() {
-  const [state, setState] = useState<UiState>('idle')
-  const [categories, setCategories] = useState<Category[]>([])
-  const [errorMessage, setErrorMessage] = useState('')
+  const { requester, setRequester } = useRequester()
+  const [page, setPage] = useState<Page>({ type: "myTickets" })
 
-  async function handleCheck() {
-    setState('loading')
-    setErrorMessage('')
-
-    try {
-      const result = await checkSystem()
-      setCategories(result.categories)
-      setState('success')
-    } catch (err) {
-      setErrorMessage('Unable to connect to TokTickIT API')
-      setState('error')
-    }
+  if (!requester) {
+    return <RequesterSelection onContinue={() => {}} />
   }
 
   return (
-    <div className="container py-5" style={{ maxWidth: 640 }}>
-      <h1 className="h3 mb-4">
-        TokTickIT <span className="text-success">IT Service Desk</span>
-      </h1>
-
-      <button
-        className="btn btn-success"
-        onClick={handleCheck}
-        disabled={state === 'loading'}
-      >
-        {state === 'loading' ? 'Loading…' : 'Check System'}
-      </button>
-
-      {state === 'success' && (
-        <div className="mt-4">
-          <p className="fw-bold text-success">System Status: Online</p>
-          <p className="fw-semibold">Supported Request Categories:</p>
-          <ul>
-            {categories.map((cat) => (
-              <li key={cat.id}>{cat.name}</li>
-            ))}
-          </ul>
+    <div>
+      <nav className="navbar navbar-expand" style={{ backgroundColor: "#006B3C" }}>
+        <div className="container">
+          <span className="navbar-brand text-white fw-bold">TokTickIT</span>
+          <div className="d-flex gap-3">
+            <button
+              className={`btn btn-sm ${page.type === "myTickets" ? "btn-light" : "btn-outline-light"}`}
+              onClick={() => setPage({ type: "myTickets" })}
+            >
+              My Tickets
+            </button>
+            <button
+              className={`btn btn-sm ${page.type === "createTicket" ? "btn-light" : "btn-outline-light"}`}
+              onClick={() => setPage({ type: "createTicket" })}
+            >
+              Create Ticket
+            </button>
+          </div>
+          <div className="ms-auto text-white d-flex align-items-center gap-3">
+            <span>
+              Logged in as: <strong>{requester.name}</strong>
+            </span>
+            <button
+              className="btn btn-sm btn-outline-light"
+              onClick={() => setRequester(null)}
+            >
+              Change Requester
+            </button>
+          </div>
         </div>
+      </nav>
+
+      {page.type === "myTickets" && (
+        <MyTickets
+          onCreateTicket={() => setPage({ type: "createTicket" })}
+          onOpenTicket={(id) => setPage({ type: "ticketDetail", id })}
+        />
       )}
-
-      {state === 'error' && (
-        <div className="mt-4">
-          <p className="fw-bold text-danger">System Status: Offline</p>
-          <p>{errorMessage}</p>
-        </div>
+      {page.type === "createTicket" && <CreateTicket />}
+      {page.type === "ticketDetail" && (
+        <TicketDetail ticketId={page.id} onBack={() => setPage({ type: "myTickets" })} />
       )}
     </div>
   )
