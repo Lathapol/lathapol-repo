@@ -136,3 +136,13 @@ Every screen/section must implement, at minimum:
 - [ ] No unintended horizontal scrolling on mobile
 - [ ] Priority/Status badges are consistent and legible
 - [ ] Empty state and no-results state are visually distinguishable
+## 17. Visual Checklist - Completed
+
+- [x] Colors match tokens (primary green #006B3C used for header/nav, success/warning badges applied consistently)
+- [x] Editable vs read-only fields are visually distinct (read-only fields use #EDF1EE gray-green shading throughout Create Ticket and Ticket Detail)
+- [x] Validation messages appear below their field, not only at top (confirmed on Create Ticket: Category, Related System, Summary, Description each show inline errors)
+- [x] Button hierarchy is consistent across all screens (primary green Submit/Create Ticket buttons, outline secondary for Cancel/Clear Filters, outline danger for Remove)
+- [x] No clipped labels or overlapping messages at any viewport (confirmed via Playwright screenshots at 1280px, 850px, 375px widths)
+- [x] No unintended horizontal scrolling on mobile (confirmed: My Tickets switches to card layout below 768px instead of a horizontally-scrolling table)
+- [x] Priority/Status badges are consistent and legible (badges use both color and text label, not color alone)
+- [x] Empty state and no-results state are visually distinguishable (different message text confirmed for zero-tickets vs filtered-to-zero scenarios)
