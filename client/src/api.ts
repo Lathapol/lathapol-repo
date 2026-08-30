@@ -143,3 +143,78 @@ export async function fetchTickets(params: FetchTicketsParams): Promise<TicketLi
   }
   return res.json()
 }
+export interface AttachmentItem {
+  id: number
+  fileName: string
+  fileType: string
+  fileSize: number
+  isRemoved: boolean
+  removedAt?: string | null
+  removedReason?: string | null
+  uploadedAt: string
+}
+
+export interface TicketDetail {
+  id: number
+  ticketNumber: string
+  summary: string
+  description: string
+  category: string
+  relatedSystem: string
+  requestedPriority: string
+  currentStatus: string
+  createdAt: string
+  updatedAt: string
+  attachments: AttachmentItem[]
+}
+
+export async function fetchTicketDetail(ticketId: number, requesterId: number): Promise<TicketDetail> {
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}?requesterId=${requesterId}`)
+  if (!res.ok) {
+    throw new Error("Failed to fetch ticket detail")
+  }
+  return res.json()
+}
+
+export async function uploadAttachment(
+  ticketId: number,
+  requesterId: number,
+  file: File
+): Promise<AttachmentItem> {
+  const formData = new FormData()
+  formData.append("requesterId", String(requesterId))
+  formData.append("file", file)
+
+  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/attachments`, {
+    method: "POST",
+    body: formData,
+  })
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    throw new Error(data?.error?.message ?? "Failed to upload attachment")
+  }
+  return res.json()
+}
+
+export function getAttachmentDownloadUrl(attachmentId: number, requesterId: number): string {
+  return `${API_URL}/api/attachments/${attachmentId}/download?requesterId=${requesterId}`
+}
+
+export async function removeAttachment(
+  attachmentId: number,
+  requesterId: number,
+  reason: string
+): Promise<AttachmentItem> {
+  const res = await fetch(`${API_URL}/api/attachments/${attachmentId}/remove`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ requesterId, reason }),
+  })
+
+  if (!res.ok) {
+    const data = await res.json().catch(() => null)
+    throw new Error(data?.error?.message ?? "Failed to remove attachment")
+  }
+  return res.json()
+}

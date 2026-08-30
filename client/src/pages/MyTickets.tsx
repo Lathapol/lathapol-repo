@@ -7,11 +7,12 @@ type LoadState = "loading" | "success" | "error"
 
 interface Props {
   onCreateTicket: () => void
+  onOpenTicket: (id: number) => void
 }
 
 const PAGE_SIZE = 10
 
-export default function MyTickets({ onCreateTicket }: Props) {
+export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
   const { requester } = useRequester()
 
   const [loadState, setLoadState] = useState<LoadState>("loading")
@@ -173,7 +174,7 @@ export default function MyTickets({ onCreateTicket }: Props) {
               </thead>
               <tbody>
                 {tickets.map((t) => (
-                  <tr key={t.id}>
+                  <tr key={t.id} role="button" onClick={() => onOpenTicket(t.id)}>
                     <td className="fw-semibold">{t.ticketNumber}</td>
                     <td>{new Date(t.createdAt).toLocaleString()}</td>
                     <td>{t.summary}</td>
@@ -197,7 +198,12 @@ export default function MyTickets({ onCreateTicket }: Props) {
 
           <div className="d-md-none">
             {tickets.map((t) => (
-              <div key={t.id} className="card mb-2 p-3">
+              <div
+                key={t.id}
+                className="card mb-2 p-3"
+                role="button"
+                onClick={() => onOpenTicket(t.id)}
+              >
                 <div className="d-flex justify-content-between">
                   <strong>{t.ticketNumber}</strong>
                   <span className="badge bg-success-subtle text-success">
