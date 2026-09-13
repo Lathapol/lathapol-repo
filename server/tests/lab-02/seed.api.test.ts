@@ -1,3 +1,6 @@
+import { client, prepareSessions, closeSessions } from '../session-helper';
+beforeAll(prepareSessions);
+afterAll(closeSessions);
 import 'dotenv/config';
 import { PrismaClient } from '../../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -21,8 +24,8 @@ describe('Lab 2 seed data', () => {
   });
 
   it('seeds at least 4 active requesters and at least 1 inactive requester', async () => {
-    const active = await prisma.requesterUser.count({ where: { isActive: true } });
-    const inactive = await prisma.requesterUser.count({ where: { isActive: false } });
+    const active = await prisma.user.count({ where: { isActive: true } });
+    const inactive = await prisma.user.count({ where: { isActive: false } });
     expect(active).toBeGreaterThanOrEqual(4);
     expect(inactive).toBeGreaterThanOrEqual(1);
   });
