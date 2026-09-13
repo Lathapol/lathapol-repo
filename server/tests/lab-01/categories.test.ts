@@ -1,9 +1,12 @@
+import { client, prepareSessions, closeSessions } from '../session-helper';
+beforeAll(prepareSessions);
+afterAll(closeSessions);
 import request from 'supertest';
 import app from '../../src/app';
 
 describe('GET /api/categories', () => {
   it('returns the 4 seeded categories in id order', async () => {
-    const res = await request(app).get('/api/categories');
+    const res = await client().get('/api/categories');
 
     expect(res.status).toBe(200);
     expect(res.body).toEqual([

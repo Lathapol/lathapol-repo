@@ -1,3 +1,6 @@
+import { client, prepareSessions, closeSessions } from '../session-helper';
+beforeAll(prepareSessions);
+afterAll(closeSessions);
 ﻿import request from "supertest";
 import path from "path";
 import fs from "fs";
@@ -27,7 +30,7 @@ describe("Attachment lifecycle", () => {
   let ticketId: number;
 
   beforeAll(async () => {
-    const res = await request(app).post("/api/tickets").send({
+    const res = await client().post("/api/tickets").send({
       requesterId: 1,
       categoryId: 1,
       relatedSystemId: 1,
@@ -39,7 +42,7 @@ describe("Attachment lifecycle", () => {
   });
 
   it("uploads a valid image attachment", async () => {
-    const res = await request(app)
+    const res = await client()
       .post(`/api/tickets/${ticketId}/attachments`)
       .field("requesterId", "1")
       .attach("file", testImagePath);
@@ -50,7 +53,7 @@ describe("Attachment lifecycle", () => {
   });
 
   it("rejects an unsupported file type", async () => {
-    const res = await request(app)
+    const res = await client()
       .post(`/api/tickets/${ticketId}/attachments`)
       .field("requesterId", "1")
       .attach("file", testTextPath);
@@ -60,24 +63,24 @@ describe("Attachment lifecycle", () => {
   });
 
   it("retrieves ticket detail including the uploaded attachment", async () => {
-    const res = await request(app).get(`/api/tickets/${ticketId}?requesterId=1`);
+    const res = await client().get(`/api/tickets/${ticketId}?requesterId=1`);
     expect(res.status).toBe(200);
     expect(res.body.attachments.length).toBeGreaterThanOrEqual(1);
   });
 
   it("downloads an active attachment", async () => {
-    const listRes = await request(app).get(`/api/tickets/${ticketId}?requesterId=1`);
+    const listRes = await client().get(`/api/tickets/${ticketId}?requesterId=1`);
     const attachmentId = listRes.body.attachments[0].id;
 
-    const res = await request(app).get(`/api/attachments/${attachmentId}/download?requesterId=1`);
+    const res = await client().get(`/api/attachments/${attachmentId}/download?requesterId=1`);
     expect(res.status).toBe(200);
   });
 
   it("soft-removes an attachment with a reason", async () => {
-    const listRes = await request(app).get(`/api/tickets/${ticketId}?requesterId=1`);
+    const listRes = await client().get(`/api/tickets/${ticketId}?requesterId=1`);
     const attachmentId = listRes.body.attachments[0].id;
 
-    const res = await request(app)
+    const res = await client()
       .patch(`/api/attachments/${attachmentId}/remove`)
       .send({ requesterId: 1, reason: "Wrong file attached" });
 
@@ -87,18 +90,18 @@ describe("Attachment lifecycle", () => {
   });
 
   it("blocks downloading a removed attachment", async () => {
-    const listRes = await request(app).get(`/api/tickets/${ticketId}?requesterId=1`);
+    const listRes = await client().get(`/api/tickets/${ticketId}?requesterId=1`);
     const attachmentId = listRes.body.attachments[0].id;
 
-    const res = await request(app).get(`/api/attachments/${attachmentId}/download?requesterId=1`);
+    const res = await client().get(`/api/attachments/${attachmentId}/download?requesterId=1`);
     expect(res.status).toBe(410);
   });
 
   it("rejects access to an attachment belonging to a different requester", async () => {
-    const listRes = await request(app).get(`/api/tickets/${ticketId}?requesterId=1`);
+    const listRes = await client().get(`/api/tickets/${ticketId}?requesterId=1`);
     const attachmentId = listRes.body.attachments[0].id;
 
-    const res = await request(app).get(`/api/attachments/${attachmentId}?requesterId=2`);
+    const res = await client(2).get(`/api/attachments/${attachmentId}?requesterId=1`);
     expect(res.status).toBe(404);
   });
 });

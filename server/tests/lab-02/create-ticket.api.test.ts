@@ -1,9 +1,12 @@
+import { client, prepareSessions, closeSessions } from '../session-helper';
+beforeAll(prepareSessions);
+afterAll(closeSessions);
 import request from 'supertest';
 import app from '../../src/app';
 
 describe('POST /api/tickets', () => {
   it('creates a valid ticket and returns 201 with a ticket number', async () => {
-    const res = await request(app).post('/api/tickets').send({
+    const res = await client().post('/api/tickets').send({
       requesterId: 1,
       categoryId: 1,
       relatedSystemId: 1,
@@ -18,7 +21,7 @@ describe('POST /api/tickets', () => {
   });
 
   it('rejects a ticket with a summary that is too short', async () => {
-    const res = await request(app).post('/api/tickets').send({
+    const res = await client().post('/api/tickets').send({
       requesterId: 1,
       categoryId: 1,
       relatedSystemId: 1,
@@ -32,7 +35,7 @@ describe('POST /api/tickets', () => {
   });
 
   it('rejects a ticket with an empty description', async () => {
-    const res = await request(app).post('/api/tickets').send({
+    const res = await client().post('/api/tickets').send({
       requesterId: 1,
       categoryId: 1,
       relatedSystemId: 1,
@@ -45,8 +48,8 @@ describe('POST /api/tickets', () => {
     expect(res.body.error.code).toBe('INVALID_DESCRIPTION');
   });
 
-  it('rejects a ticket for an inactive or missing requester', async () => {
-    const res = await request(app).post('/api/tickets').send({
+  it('ignores a spoofed requester ID', async () => {
+    const res = await client().post('/api/tickets').send({
       requesterId: 999,
       categoryId: 1,
       relatedSystemId: 1,
@@ -55,7 +58,7 @@ describe('POST /api/tickets', () => {
       requestedPriority: 'MEDIUM',
     });
 
-    expect(res.status).toBe(404);
-    expect(res.body.error.code).toBe('REQUESTER_NOT_FOUND');
+    expect(res.status).toBe(201);
+    expect(res.body.requesterId).toBe(1);
   });
 });

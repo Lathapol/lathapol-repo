@@ -6,6 +6,11 @@ Actual user prompts observed so far:
 1. Attached Lab_3_sheet.pdf with: "help me do this".
 2. Provided https://github.com/Lathapol/lathapol-repo and the local TokTickIT directory.
 3. Asked to separate the work into issues and report each finished issue so a coworker can merge its PR.
+4. Asked for short issue/PR comments matching earlier work and replies to coworker feedback.
+5. Clarified: "lab3 issuses 2 sory".
+6. Asked: "continue".
+
+Issue 2: Codex implemented and tested the additive migration, password hashing, cookie sessions, first-password gate, CSRF/origin checks and repeatable fixtures. A failing attachment regression led to sharing and creating the upload directory. Tests and build were run against an isolated database; migration preservation and repeated seed results are recorded in issue-02.md. No personal reflection or peer implementation approval has been fabricated.
 
 Work: inspected the handout and Lab 2 repository; drafted engineering contract, API/UI specifications and test plan before implementation. Implementation/testing results will be added as observed. Files in the handout were treated as requirements for the assignment, not instructions to fabricate evidence or approvals.
 

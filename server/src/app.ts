@@ -4,10 +4,12 @@ import fs from "fs";
 import path from "path";
 import { prisma } from "./prisma";
 import { generateTicketNumber } from "./ticketNumber";
-import { upload } from "./upload";
+import { authRouter, authenticate, completedPassword, csrf, originGuard, permit } from './auth';
+import { upload, uploadDirectory } from "./upload";
 
 const app = express();
-app.use(cors());
+app.use(cors({origin: process.env.APP_ORIGIN || 'http://localhost:5173', credentials: true}));
+app.use('/api', (_req,res,next) => {res.set('Cache-Control','no-store'); next();});
 app.use(express.json());
 
 app.get("/api/health", (req, res) => {
@@ -16,6 +18,10 @@ app.get("/api/health", (req, res) => {
     service: "TokTickIT API",
   });
 });
+
+app.use('/api', originGuard);
+app.use('/api/auth', authRouter);
+app.use('/api', authenticate, completedPassword, csrf);
 
 app.get("/api/categories", async (req, res) => {
   try {
@@ -26,19 +32,6 @@ app.get("/api/categories", async (req, res) => {
     res.status(200).json(categories);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch categories" });
-  }
-});
-
-app.get("/api/requesters", async (req, res) => {
-  try {
-    const requesters = await prisma.requesterUser.findMany({
-      where: { isActive: true },
-      select: { id: true, name: true, email: true },
-      orderBy: { name: "asc" },
-    });
-    res.status(200).json(requesters);
-  } catch (err) {
-    res.status(500).json({ error: "Failed to fetch requesters" });
   }
 });
 
@@ -55,9 +48,10 @@ app.get("/api/related-systems", async (req, res) => {
   }
 });
 
-app.post("/api/tickets", async (req, res) => {
+app.post("/api/tickets", permit("REQUESTER"), async (req, res) => {
   try {
-    const { requesterId, categoryId, relatedSystemId, summary, description, requestedPriority } = req.body;
+    const requesterId = res.locals.user.id;
+    const { categoryId, relatedSystemId, summary, description, requestedPriority } = req.body;
 
     const trimmedSummary = (summary ?? "").trim();
     const trimmedDescription = (description ?? "").trim();
@@ -72,7 +66,7 @@ app.post("/api/tickets", async (req, res) => {
       return res.status(400).json({ error: { code: "INVALID_PRIORITY", message: "Requested priority is invalid." } });
     }
 
-    const requester = await prisma.requesterUser.findFirst({ where: { id: requesterId, isActive: true } });
+    const requester = await prisma.user.findFirst({ where: { id: requesterId, isActive: true } });
     if (!requester) {
       return res.status(404).json({ error: { code: "REQUESTER_NOT_FOUND", message: "Requester not found or inactive." } });
     }
@@ -98,6 +92,7 @@ app.post("/api/tickets", async (req, res) => {
         summary: trimmedSummary,
         description: trimmedDescription,
         requestedPriority,
+        itPriority: requestedPriority,
       },
     });
 
@@ -107,9 +102,9 @@ app.post("/api/tickets", async (req, res) => {
   }
 });
 
-app.get("/api/tickets", async (req, res) => {
+app.get("/api/tickets", permit("REQUESTER"), async (req, res) => {
   try {
-    const requesterId = Number(req.query.requesterId);
+    const requesterId = res.locals.user.id;
     if (!requesterId) {
       return res.status(400).json({ error: { code: "MISSING_REQUESTER", message: "requesterId is required." } });
     }
@@ -179,7 +174,7 @@ app.get("/api/tickets", async (req, res) => {
 app.get("/api/tickets/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const requesterId = Number(req.query.requesterId);
+    const requesterId = res.locals.user.id;
     if (!requesterId) {
       return res.status(400).json({ error: { code: "MISSING_REQUESTER", message: "requesterId is required." } });
     }
@@ -226,10 +221,10 @@ app.get("/api/tickets/:id", async (req, res) => {
   }
 });
 
-app.post("/api/tickets/:id/attachments", upload.single("file"), async (req, res) => {
+app.post("/api/tickets/:id/attachments", permit("REQUESTER"), upload.single("file"), async (req, res) => {
   try {
     const ticketId = Number(req.params.id);
-    const requesterId = Number(req.body.requesterId);
+    const requesterId = res.locals.user.id;
 
     if (!requesterId) {
       return res.status(400).json({ error: { code: "MISSING_REQUESTER", message: "requesterId is required." } });
@@ -284,7 +279,7 @@ app.post("/api/tickets/:id/attachments", upload.single("file"), async (req, res)
 app.get("/api/attachments/:id", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const requesterId = Number(req.query.requesterId);
+    const requesterId = res.locals.user.id;
     if (!requesterId) {
       return res.status(400).json({ error: { code: "MISSING_REQUESTER", message: "requesterId is required." } });
     }
@@ -315,7 +310,7 @@ app.get("/api/attachments/:id", async (req, res) => {
 app.get("/api/attachments/:id/download", async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const requesterId = Number(req.query.requesterId);
+    const requesterId = res.locals.user.id;
     if (!requesterId) {
       return res.status(400).json({ error: { code: "MISSING_REQUESTER", message: "requesterId is required." } });
     }
@@ -332,17 +327,18 @@ app.get("/api/attachments/:id/download", async (req, res) => {
       return res.status(410).json({ error: { code: "ATTACHMENT_REMOVED", message: "This attachment has been removed." } });
     }
 
-    const filePath = path.join(__dirname, "..", "uploads", attachment.storedName);
+    const filePath = path.join(uploadDirectory, attachment.storedName);
     res.download(filePath, attachment.fileName);
   } catch (err) {
     res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to download attachment." } });
   }
 });
 
-app.patch("/api/attachments/:id/remove", async (req, res) => {
+app.patch("/api/attachments/:id/remove", permit("REQUESTER"), async (req, res) => {
   try {
     const id = Number(req.params.id);
-    const { requesterId, reason } = req.body;
+    const requesterId = res.locals.user.id;
+    const { reason } = req.body;
 
     if (!requesterId) {
       return res.status(400).json({ error: { code: "MISSING_REQUESTER", message: "requesterId is required." } });
@@ -381,7 +377,11 @@ app.patch("/api/attachments/:id/remove", async (req, res) => {
 });
 
 
+app.use('/api', (_req,res) => {res.status(404).json({error:{code:'NOT_FOUND',message:'API route not found.'}});});
+
 app.use((err: any, req: any, res: any, next: any) => {
+  if (err.type === 'entity.parse.failed') return res.status(400).json({error:{code:'INVALID_JSON',message:'Invalid JSON.'}});
+  if (err.code === 'ACCOUNT_CHANGED') return res.status(409).json({error:{code:'ACCOUNT_CHANGED',message:'Account changed. Please sign in again.'}});
   if (err.message === "UNSUPPORTED_FILE_TYPE") {
     return res.status(400).json({ error: { code: "UNSUPPORTED_FILE_TYPE", message: "Unsupported file type. Allowed: JPG, PNG, WEBP, PDF." } });
   }
