@@ -12,11 +12,11 @@ export interface SystemStatus {
 }
 
 export async function checkSystem(): Promise<SystemStatus> {
-  const healthRes = await fetch(`${API_URL}/api/health`)
+  const healthRes = await apiFetch(`${API_URL}/api/health`)
   if (!healthRes.ok) {
     throw new Error("Backend health check failed")
   }
-  const categoriesRes = await fetch(`${API_URL}/api/categories`)
+  const categoriesRes = await apiFetch(`${API_URL}/api/categories`)
   if (!categoriesRes.ok) {
     throw new Error("Failed to fetch categories")
   }
@@ -25,7 +25,7 @@ export async function checkSystem(): Promise<SystemStatus> {
 }
 
 export async function fetchCategories(): Promise<Category[]> {
-  const res = await fetch(`${API_URL}/api/categories`)
+  const res = await apiFetch(`${API_URL}/api/categories`)
   if (!res.ok) throw new Error("Failed to fetch categories")
   return res.json()
 }
@@ -37,7 +37,7 @@ export interface Requester {
 }
 
 export async function fetchRequesters(): Promise<Requester[]> {
-  const res = await fetch(`${API_URL}/api/requesters`)
+  const res = await apiFetch(`${API_URL}/api/requesters`)
   if (!res.ok) {
     throw new Error("Failed to fetch requesters")
   }
@@ -50,7 +50,7 @@ export interface RelatedSystem {
 }
 
 export async function fetchRelatedSystems(): Promise<RelatedSystem[]> {
-  const res = await fetch(`${API_URL}/api/related-systems`)
+  const res = await apiFetch(`${API_URL}/api/related-systems`)
   if (!res.ok) throw new Error("Failed to fetch related systems")
   return res.json()
 }
@@ -78,10 +78,10 @@ export interface Ticket {
 }
 
 export async function createTicket(input: CreateTicketInput): Promise<Ticket> {
-  const res = await fetch(`${API_URL}/api/tickets`, {
+  const res = await apiFetch(`${API_URL}/api/tickets`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
+    body: JSON.stringify({...input,requesterId:undefined}),
   })
   if (!res.ok) {
     const data = await res.json().catch(() => null)
@@ -127,7 +127,7 @@ export interface FetchTicketsParams {
 
 export async function fetchTickets(params: FetchTicketsParams): Promise<TicketListResponse> {
   const query = new URLSearchParams()
-  query.set("requesterId", String(params.requesterId))
+
   if (params.search) query.set("search", params.search)
   if (params.category) query.set("category", String(params.category))
   if (params.priority) query.set("priority", params.priority)
@@ -137,7 +137,7 @@ export async function fetchTickets(params: FetchTicketsParams): Promise<TicketLi
   if (params.page) query.set("page", String(params.page))
   if (params.pageSize) query.set("pageSize", String(params.pageSize))
 
-  const res = await fetch(`${API_URL}/api/tickets?${query.toString()}`)
+  const res = await apiFetch(`${API_URL}/api/tickets?${query.toString()}`)
   if (!res.ok) {
     throw new Error("Failed to fetch tickets")
   }
@@ -168,8 +168,8 @@ export interface TicketDetail {
   attachments: AttachmentItem[]
 }
 
-export async function fetchTicketDetail(ticketId: number, requesterId: number): Promise<TicketDetail> {
-  const res = await fetch(`${API_URL}/api/tickets/${ticketId}?requesterId=${requesterId}`)
+export async function fetchTicketDetail(ticketId: number, _requesterId: number): Promise<TicketDetail> {
+  const res = await apiFetch(`${API_URL}/api/tickets/${ticketId}`)
   if (!res.ok) {
     throw new Error("Failed to fetch ticket detail")
   }
@@ -178,14 +178,14 @@ export async function fetchTicketDetail(ticketId: number, requesterId: number): 
 
 export async function uploadAttachment(
   ticketId: number,
-  requesterId: number,
+  _requesterId: number,
   file: File
 ): Promise<AttachmentItem> {
   const formData = new FormData()
-  formData.append("requesterId", String(requesterId))
+
   formData.append("file", file)
 
-  const res = await fetch(`${API_URL}/api/tickets/${ticketId}/attachments`, {
+  const res = await apiFetch(`${API_URL}/api/tickets/${ticketId}/attachments`, {
     method: "POST",
     body: formData,
   })
@@ -197,19 +197,19 @@ export async function uploadAttachment(
   return res.json()
 }
 
-export function getAttachmentDownloadUrl(attachmentId: number, requesterId: number): string {
-  return `${API_URL}/api/attachments/${attachmentId}/download?requesterId=${requesterId}`
+export function getAttachmentDownloadUrl(attachmentId: number, _requesterId: number): string {
+  return `${API_URL}/api/attachments/${attachmentId}/download`
 }
 
 export async function removeAttachment(
   attachmentId: number,
-  requesterId: number,
+  _requesterId: number,
   reason: string
 ): Promise<AttachmentItem> {
-  const res = await fetch(`${API_URL}/api/attachments/${attachmentId}/remove`, {
+  const res = await apiFetch(`${API_URL}/api/attachments/${attachmentId}/remove`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ requesterId, reason }),
+    body: JSON.stringify({ reason }),
   })
 
   if (!res.ok) {
@@ -217,4 +217,23 @@ export async function removeAttachment(
     throw new Error(data?.error?.message ?? "Failed to remove attachment")
   }
   return res.json()
+}
+
+let csrfToken = ''
+export function setCsrfToken(value:string){csrfToken=value}
+async function apiFetch(url:string,options:RequestInit={}) {
+  const headers=new Headers(options.headers)
+  if(options.method && !['GET','HEAD'].includes(options.method) && csrfToken) headers.set('X-CSRF-Token',csrfToken)
+  const res=await fetch(url,{...options,headers,credentials:'include'})
+  if(!res.ok){
+    const body=await res.clone().json().catch(()=>null)
+    if(res.status===401 && !url.endsWith('/auth/login'))window.dispatchEvent(new Event('session-expired'))
+    if(body?.error?.code==='PASSWORD_CHANGE_REQUIRED')window.dispatchEvent(new Event('password-required'))
+    throw Object.assign(new Error(body?.error?.message || 'Unable to complete the request. Please retry.'),{status:res.status})
+  }
+  return res
+}
+export async function authRequest(path:string,body?:object){
+  const response=await apiFetch(`${API_URL}/api/auth${path}`,body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
+  return response.status===204?undefined:response.json()
 }
