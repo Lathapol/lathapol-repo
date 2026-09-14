@@ -22,6 +22,7 @@ app.get("/api/health", (req, res) => {
 app.use('/api', originGuard);
 app.use('/api/auth', authRouter);
 app.use('/api', authenticate, completedPassword, csrf);
+app.param('id',(req,res,next,value)=>{if(!/^[1-9]\d*$/.test(value)||!Number.isSafeInteger(Number(value)))return res.status(400).json({error:{code:'INVALID_ID',message:'Invalid resource ID.'}});next();});
 
 app.get("/api/categories", async (req, res) => {
   try {
@@ -53,8 +54,8 @@ app.post("/api/tickets", permit("REQUESTER"), async (req, res) => {
     const requesterId = res.locals.user.id;
     const { categoryId, relatedSystemId, summary, description, requestedPriority } = req.body;
 
-    const trimmedSummary = (summary ?? "").trim();
-    const trimmedDescription = (description ?? "").trim();
+    const trimmedSummary = typeof summary === "string" ? summary.trim() : "";
+    const trimmedDescription = typeof description === "string" ? description.trim() : "";
 
     if (trimmedSummary.length < 5 || trimmedSummary.length > 150) {
       return res.status(400).json({ error: { code: "INVALID_SUMMARY", message: "Summary must be between 5 and 150 characters." } });
@@ -71,6 +72,7 @@ app.post("/api/tickets", permit("REQUESTER"), async (req, res) => {
       return res.status(404).json({ error: { code: "REQUESTER_NOT_FOUND", message: "Requester not found or inactive." } });
     }
 
+    if (!Number.isSafeInteger(categoryId) || categoryId < 1 || !Number.isSafeInteger(relatedSystemId) || relatedSystemId < 1) return res.status(400).json({error:{code:'INVALID_REFERENCE',message:'Choose a category and related system.'}});
     const category = await prisma.category.findUnique({ where: { id: categoryId } });
     if (!category) {
       return res.status(400).json({ error: { code: "INVALID_CATEGORY", message: "Category is invalid." } });
@@ -81,9 +83,10 @@ app.post("/api/tickets", permit("REQUESTER"), async (req, res) => {
       return res.status(400).json({ error: { code: "INVALID_RELATED_SYSTEM", message: "Related system is invalid." } });
     }
 
-    const ticketNumber = await generateTicketNumber();
-
-    const ticket = await prisma.ticket.create({
+    let ticket;
+    for(let attempt=0;attempt<5;attempt++) {
+      const ticketNumber = await generateTicketNumber();
+      try { ticket = await prisma.ticket.create({
       data: {
         ticketNumber,
         requesterId,
@@ -96,6 +99,9 @@ app.post("/api/tickets", permit("REQUESTER"), async (req, res) => {
       },
     });
 
+      break;
+      } catch(error:any) {if(error.code !== 'P2002' || attempt===4)throw error;}
+    }
     res.status(201).json(ticket);
   } catch (err) {
     res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to create ticket." } });
@@ -109,6 +115,16 @@ app.get("/api/tickets", permit("REQUESTER"), async (req, res) => {
       return res.status(400).json({ error: { code: "MISSING_REQUESTER", message: "requesterId is required." } });
     }
 
+    const q=req.query;
+    if(Object.keys(q).some(k=>!['requesterId','search','category','priority','status','sort','order','page','pageSize'].includes(k)))return res.status(400).json({error:{code:'INVALID_QUERY',message:'Unknown ticket filter.'}});
+    const positive=(v:unknown)=>typeof v==='string' && /^[1-9]\d*$/.test(v) && Number.isSafeInteger(Number(v));
+    if ((q.search!==undefined && (typeof q.search!=='string'||q.search.length>200)) ||
+      ['category','page','pageSize'].some(k=>q[k]!==undefined&&!positive(q[k])) ||
+      (q.pageSize!==undefined&&Number(q.pageSize)>50) ||
+      (q.priority!==undefined&&!['LOW','MEDIUM','HIGH'].includes(q.priority as string)) ||
+      (q.status!==undefined&&!['NEW','OPEN','IN_PROGRESS','WAITING_FOR_REQUESTER','RESOLVED','CLOSED','REOPENED','CANCELLED'].includes(q.status as string)) ||
+      (q.sort!==undefined&&!['createdAt','updatedAt','ticketNumber'].includes(q.sort as string)) ||
+      (q.order!==undefined&&!['asc','desc'].includes(q.order as string))) return res.status(400).json({error:{code:'INVALID_QUERY',message:'Invalid ticket filter or pagination.'}});
     const search = (req.query.search as string) || "";
     const categoryId = req.query.category ? Number(req.query.category) : undefined;
     const requestedPriority = req.query.priority as string | undefined;
@@ -140,7 +156,7 @@ app.get("/api/tickets", permit("REQUESTER"), async (req, res) => {
 
     const tickets = await prisma.ticket.findMany({
       where,
-      orderBy: { [sortBy]: sortOrder },
+      orderBy: [{ [sortBy]: sortOrder },{id:sortOrder}],
       skip: (safePage - 1) * pageSize,
       take: pageSize,
       include: {
@@ -180,7 +196,7 @@ app.get("/api/tickets/:id", async (req, res) => {
     }
 
     const ticket = await prisma.ticket.findFirst({
-      where: { id, requesterId },
+      where: { id, ...(res.locals.user.role==='REQUESTER'?{requesterId}:{}) },
       include: {
         category: { select: { name: true } },
         relatedSystem: { select: { name: true } },
@@ -221,58 +237,28 @@ app.get("/api/tickets/:id", async (req, res) => {
   }
 });
 
-app.post("/api/tickets/:id/attachments", permit("REQUESTER"), upload.single("file"), async (req, res) => {
+app.post("/api/tickets/:id/attachments", permit("REQUESTER"), async (req,res,next)=>{
+  const ticket=await prisma.ticket.findFirst({where:{id:Number(req.params.id),requesterId:res.locals.user.id}});
+  if(!ticket)return res.status(404).json({error:{code:'TICKET_NOT_FOUND',message:'Ticket not found.'}});
+  next();
+}, upload.single("file"), async (req,res)=>{
+  if(!req.file)return res.status(400).json({error:{code:'NO_FILE',message:'Choose a file to upload.'}});
+  const file=req.file;
   try {
-    const ticketId = Number(req.params.id);
-    const requesterId = res.locals.user.id;
-
-    if (!requesterId) {
-      return res.status(400).json({ error: { code: "MISSING_REQUESTER", message: "requesterId is required." } });
-    }
-
-    const ticket = await prisma.ticket.findFirst({ where: { id: ticketId, requesterId } });
-    if (!ticket) {
-      return res.status(404).json({ error: { code: "TICKET_NOT_FOUND", message: "Ticket not found." } });
-    }
-
-    const activeCount = await prisma.attachment.count({
-      where: { ticketId, isRemoved: false },
+    const attachment=await prisma.$transaction(async tx=>{
+      const ticketId=Number(req.params.id);
+      await tx.$queryRaw`SELECT id FROM "Ticket" WHERE id = ${ticketId} FOR UPDATE`;
+      const ticket=await tx.ticket.findFirst({where:{id:ticketId,requesterId:res.locals.user.id}});
+      if(!ticket)throw Object.assign(new Error(),{code:'TICKET_NOT_FOUND'});
+      if(await tx.attachment.count({where:{ticketId,isRemoved:false}})>=5)throw Object.assign(new Error(),{code:'MAX_ATTACHMENTS'});
+      return tx.attachment.create({data:{ticketId,fileName:file.originalname,storedName:file.filename,fileType:file.mimetype,fileSize:file.size}});
     });
-    if (activeCount >= 5) {
-      if (req.file) fs.unlinkSync(req.file.path);
-      return res.status(400).json({ error: { code: "MAX_ATTACHMENTS", message: "Maximum of 5 active attachments per ticket reached." } });
-    }
-
-    if (!req.file) {
-      return res.status(400).json({ error: { code: "NO_FILE", message: "No file was uploaded." } });
-    }
-
-    const attachment = await prisma.attachment.create({
-      data: {
-        ticketId,
-        fileName: req.file.originalname,
-        storedName: req.file.filename,
-        fileType: req.file.mimetype,
-        fileSize: req.file.size,
-      },
-    });
-
-    res.status(201).json({
-      id: attachment.id,
-      fileName: attachment.fileName,
-      fileType: attachment.fileType,
-      fileSize: attachment.fileSize,
-      isRemoved: attachment.isRemoved,
-      uploadedAt: attachment.uploadedAt,
-    });
-  } catch (err: any) {
-    if (err.message === "UNSUPPORTED_FILE_TYPE") {
-      return res.status(400).json({ error: { code: "UNSUPPORTED_FILE_TYPE", message: "Unsupported file type. Allowed: JPG, PNG, WEBP, PDF." } });
-    }
-    if (err.code === "LIMIT_FILE_SIZE") {
-      return res.status(400).json({ error: { code: "FILE_TOO_LARGE", message: "File exceeds the 5 MB size limit." } });
-    }
-    res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to upload attachment." } });
+    res.status(201).json({id:attachment.id,fileName:attachment.fileName,fileType:attachment.fileType,fileSize:attachment.fileSize,isRemoved:attachment.isRemoved,uploadedAt:attachment.uploadedAt});
+  }catch(error:any){
+    await fs.promises.unlink(file.path).catch(()=>{});
+    if(error.code==='MAX_ATTACHMENTS')return res.status(400).json({error:{code:'MAX_ATTACHMENTS',message:'Maximum of 5 active attachments per ticket reached.'}});
+    if(error.code==='TICKET_NOT_FOUND')return res.status(404).json({error:{code:'TICKET_NOT_FOUND',message:'Ticket not found.'}});
+    res.status(500).json({error:{code:'SERVER_ERROR',message:'Failed to upload attachment.'}});
   }
 });
 
@@ -285,7 +271,7 @@ app.get("/api/attachments/:id", async (req, res) => {
     }
 
     const attachment = await prisma.attachment.findFirst({
-      where: { id, ticket: { requesterId } },
+      where: { id, ...(res.locals.user.role==='REQUESTER'?{ticket:{requesterId}}:{}) },
     });
 
     if (!attachment) {
@@ -316,7 +302,7 @@ app.get("/api/attachments/:id/download", async (req, res) => {
     }
 
     const attachment = await prisma.attachment.findFirst({
-      where: { id, ticket: { requesterId } },
+      where: { id, ...(res.locals.user.role==='REQUESTER'?{ticket:{requesterId}}:{}) },
     });
 
     if (!attachment) {
@@ -338,7 +324,8 @@ app.patch("/api/attachments/:id/remove", permit("REQUESTER"), async (req, res) =
   try {
     const id = Number(req.params.id);
     const requesterId = res.locals.user.id;
-    const { reason } = req.body;
+    const { reason } = req.body || {};
+    if(reason!==undefined && (typeof reason!=='string'||reason.length>500))return res.status(400).json({error:{code:'INVALID_REASON',message:'Removal reason must be at most 500 characters.'}});
 
     if (!requesterId) {
       return res.status(400).json({ error: { code: "MISSING_REQUESTER", message: "requesterId is required." } });

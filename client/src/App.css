@@ -182,3 +182,12 @@
     border-right-color: var(--border);
   }
 }
+
+.auth-page {min-height:100vh;display:grid;place-items:center;padding:24px;background:#F5F7F6;}
+:root{color-scheme:light;font-size:16px;color:#1F2A24;background:#F5F7F6;--bg:#F5F7F6;--text:#1F2A24;--text-h:#1F2A24;--accent:#006B3C}
+.btn-success{--bs-btn-bg:#006B3C;--bs-btn-border-color:#006B3C;--bs-btn-hover-bg:#0B7A46;--bs-btn-hover-border-color:#0B7A46}
+.auth-card{width:100%;max-width:480px;border:1px solid #dce7df;border-radius:16px;box-shadow:0 12px 40px #006b3c0d;}
+.navbar .container{gap:16px;flex-wrap:wrap;}
+.list-group-item{gap:16px;flex-wrap:wrap;overflow-wrap:anywhere;}
+.form-control:focus,.form-select:focus{border-color:#006B3C;box-shadow:0 0 0 3px #006b3c33;}
+@media(max-width:767px){.btn{min-height:44px}.navbar .ms-auto{margin-left:0!important;flex-wrap:wrap}.auth-page{padding:16px}}

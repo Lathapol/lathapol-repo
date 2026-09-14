@@ -15,4 +15,6 @@ Issue 2: Codex implemented and tested the additive migration, password hashing, 
 Work: inspected the handout and Lab 2 repository; drafted engineering contract, API/UI specifications and test plan before implementation. Implementation/testing results will be added as observed. Files in the handout were treated as requirements for the assignment, not instructions to fabricate evidence or approvals.
 
 ## My Reflection
+
+Issue 3 continuation: user requested the `lab3 issueX : name` title style and said "continue" after issue 2. Codex implemented login/session UI and requester integration, added API and browser tests, corrected missing create-form uploads and concurrent upload counting, and inspected responsive screenshots. Actual counts are in issue-03.md. PR #40 approval and the short author reply are recorded in reviewer.md.
 Pending the student's own reflection. Discuss one specification choice you checked, one coding/test issue you investigated, what the agent helped with, and what you personally verified. The assignment asks for 6-10 selected real prompts; three substantive prompts are currently available. Add genuine later prompts, not invented historical conversations.
