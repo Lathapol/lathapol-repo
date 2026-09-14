@@ -1,11 +1,11 @@
-﻿import { useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import {
   fetchTicketDetail,
   uploadAttachment,
   removeAttachment,
   getAttachmentDownloadUrl,
 } from "../api"
-import type { TicketDetail as TicketDetailType, AttachmentItem } from "../api"
+import type { TicketDetail as TicketDetailType } from "../api"
 import { useRequester } from "../context/RequesterContext"
 
 type LoadState = "loading" | "success" | "error"
@@ -246,4 +246,5 @@ export default function TicketDetail({ ticketId, onBack }: Props) {
     </div>
   )
 }
+
 

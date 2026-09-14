@@ -1,6 +1,6 @@
 ﻿import { useEffect, useState } from "react"
 import { useRequester } from "../context/RequesterContext"
-import { fetchTickets } from "../api"
+import { fetchTickets, fetchCategories } from "../api"
 import type { TicketListItem, TicketListMeta } from "../api"
 
 type LoadState = "loading" | "success" | "error"
@@ -26,14 +26,19 @@ export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
   const [sort, setSort] = useState("createdAt")
   const [order, setOrder] = useState<"asc" | "desc">("desc")
   const [page, setPage] = useState(1)
+  const [categories,setCategories]=useState<{id:number;name:string}[]>([])
+  const [retry,setRetry]=useState(0)
+  useEffect(()=>{fetchCategories().then(data=>setCategories(Array.isArray(data)?data:[])).catch(()=>{})},[])
 
   useEffect(() => {
     if (!requester) return
     setLoadState("loading")
+    let current=true
 
     fetchTickets({
       requesterId: requester.id,
       search: search || undefined,
+      category: category ? Number(category) : undefined,
       priority: priority || undefined,
       status: status || undefined,
       sort,
@@ -42,12 +47,14 @@ export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
       pageSize: PAGE_SIZE,
     })
       .then((res) => {
+        if(!current)return
         setTickets(res.data)
         setMeta(res.meta)
         setLoadState("success")
       })
-      .catch(() => setLoadState("error"))
-  }, [requester, search, category, priority, status, sort, order, page])
+      .catch(() => {if(current)setLoadState("error")})
+    return ()=>{current=false}
+  }, [requester, search, category, priority, status, sort, order, page,retry])
 
   function handleSort(field: string) {
     if (sort === field) {
@@ -94,6 +101,8 @@ export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
             type="text"
             className="form-control"
             placeholder="Search by ticket number or summary..."
+            aria-label="Search tickets"
+            maxLength={200}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value)
@@ -101,8 +110,10 @@ export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
             }}
           />
         </div>
+        <div className="col-md-2"><select className="form-select" aria-label="Category" value={category} onChange={e=>{setCategory(e.target.value);setPage(1)}}><option value="">All Categories</option>{categories.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select></div>
         <div className="col-md-2">
           <select
+            aria-label="Priority"
             className="form-select"
             value={priority}
             onChange={(e) => {
@@ -118,6 +129,7 @@ export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
         </div>
         <div className="col-md-2">
           <select
+            aria-label="Status"
             className="form-select"
             value={status}
             onChange={(e) => {
@@ -127,6 +139,7 @@ export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
           >
             <option value="">All Statuses</option>
             <option value="NEW">New</option>
+            {['OPEN','IN_PROGRESS','WAITING_FOR_REQUESTER','RESOLVED','CLOSED','REOPENED','CANCELLED'].map(value=><option key={value} value={value}>{value.replaceAll('_',' ')}</option>)}
           </select>
         </div>
       </div>
@@ -134,8 +147,9 @@ export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
       {loadState === "loading" && <p className="text-center py-5">Loading...</p>}
 
       {loadState === "error" && (
-        <div className="alert alert-danger">
+        <div className="alert alert-danger" role="alert">
           Unable to load your tickets. Please try again later.
+          <button className="btn btn-outline-danger ms-2" onClick={()=>setRetry(n=>n+1)}>Retry</button>
         </div>
       )}
 
