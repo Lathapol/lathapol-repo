@@ -1,6 +1,8 @@
 # Lab 3 review record
 
-Contract and issues 2–6 reviews completed; issue 7 implementation review pending.
+Author: Lathapol Srikhiao - 67070503475 (@Lathapol). Reviewer: Kittakorn Poungpien - 67070503401 (@Kittakorn-P). Identity details are from the supplied Lab 2 submission; Lab 3 approvals below are independently verified on GitHub.
+
+Contract and issues 2–7 reviews completed; issue 8 cleanup and final release review pending.
 
 | Reviewer identity | PR link | Review comment | Author response | Approval |
 |---|---|---|---|---|
@@ -17,3 +19,5 @@ Kittakorn-P approved [PR #42](https://github.com/Lathapol/lathapol-repo/pull/42#
 Kittakorn-P approved [PR #43](https://github.com/Lathapol/lathapol-repo/pull/43#pullrequestreview-5205643037): "Workflow done correctly. ready to go". Merge verified 2026-09-15. Author response: "ok thanks, i'll continue issue6 now".
 
 Kittakorn-P approved [PR #44](https://github.com/Lathapol/lathapol-repo/pull/44#pullrequestreview-5208477951): "All and all work fine. UI artifacts is correct too. merge and go next". Merge verified 2026-09-15. Author response: "ok thanks, i'll continue issue7 now".
+
+Kittakorn-P approved [PR #45](https://github.com/Lathapol/lathapol-repo/pull/45#pullrequestreview-5208560129): "All test work fine". Merge verified 2026-09-15. [Author response](https://github.com/Lathapol/lathapol-repo/pull/45#issuecomment-5684046742): "ok thanks, i'll prepare issue8 now".
