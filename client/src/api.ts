@@ -237,3 +237,18 @@ export async function authRequest(path:string,body?:object){
   const response=await apiFetch(`${API_URL}/api/auth${path}`,body===undefined?{}:{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)})
   return response.status===204?undefined:response.json()
 }
+
+export interface QueueOwner { id: number; name: string; role: string; isActive: boolean }
+export interface QueueTicket extends TicketListItem {
+  itPriority: string
+  requester: { id: number; name: string }
+  owner: { id: number; name: string } | null
+}
+export interface QueueResponse { data: QueueTicket[]; meta: TicketListMeta }
+export async function fetchQueue(params: Record<string, string>): Promise<QueueResponse> {
+  const query = new URLSearchParams(Object.entries(params).filter(([, value]) => value !== ''))
+  return (await apiFetch(`${API_URL}/api/staff/tickets?${query}`)).json()
+}
+export async function fetchOwners(): Promise<QueueOwner[]> {
+  return (await apiFetch(`${API_URL}/api/staff/owners`)).json()
+}

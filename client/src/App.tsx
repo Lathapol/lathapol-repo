@@ -1,3 +1,4 @@
+import TicketQueue from './pages/TicketQueue'
 ﻿import { useState } from "react"
 import { RequesterProvider, useRequester } from "./context/RequesterContext"
 import Login from "./pages/Login"
@@ -71,7 +72,14 @@ function RequesterApp() {
 function RoleHome(){
   const {user,logout}=useAuth()
   const [error,setError]=useState('')
-  return <main className="container py-5"><h1>TokTickIT</h1><p>{user?.name} · {user?.role==='IT_STAFF'?'IT Staff':'Administrator'}</p><h2>{user?.role==='IT_STAFF'?'Ticket Queue':'User Management'}</h2><p>This workspace will be added in the next Lab 3 issues.</p>{error&&<p role="alert">{error}</p>}<button className="btn btn-success" onClick={()=>logout().catch(()=>setError('Unable to sign out. Please retry.'))}>Sign out</button></main>
+  const [ticketId,setTicketId]=useState<number|null>(null)
+  const [busy,setBusy]=useState(false)
+  if(!user)return null
+  return <RequesterProvider key={user.id} initialRequester={user}>
+    <nav className="navbar queue-nav"><div className="container"><strong>TokTickIT</strong><span>{user.name} · {user.role==='IT_STAFF'?'IT Staff':'Administrator'}</span><button className="btn btn-outline-light" disabled={busy} onClick={async()=>{setBusy(true);try{await logout()}catch{setError('Unable to sign out. Please retry.')}finally{setBusy(false)}}}>Sign out</button></div></nav>
+    {error&&<p role="alert">{error}</p>}
+    {ticketId===null?<TicketQueue onOpenTicket={setTicketId}/>:<TicketDetail ticketId={ticketId} readOnly onBack={()=>setTicketId(null)}/>}
+  </RequesterProvider>
 }
 function App(){
   const {user,loading,error,refresh}=useAuth()

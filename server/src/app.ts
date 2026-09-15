@@ -1,4 +1,5 @@
-﻿import express from "express";
+﻿import { staffRouter } from './staff';
+import express from "express";
 import cors from "cors";
 import fs from "fs";
 import path from "path";
@@ -22,6 +23,7 @@ app.get("/api/health", (req, res) => {
 app.use('/api', originGuard);
 app.use('/api/auth', authRouter);
 app.use('/api', authenticate, completedPassword, csrf);
+app.use('/api/staff', staffRouter);
 app.param('id',(req,res,next,value)=>{if(!/^[1-9]\d*$/.test(value)||!Number.isSafeInteger(Number(value)))return res.status(400).json({error:{code:'INVALID_ID',message:'Invalid resource ID.'}});next();});
 
 app.get("/api/categories", async (req, res) => {
