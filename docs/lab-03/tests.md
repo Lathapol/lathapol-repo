@@ -1,27 +1,64 @@
-# Lab 3 test plan and traceability
+# Lab 3 integrated verification
 
-Prepared before implementation. Initial status for every row: NOT RUN. Planned paths below become actual paths when implemented; do not mark Pass without recorded execution. Existing Lab 2 tests must evolve from the removed selector to real login; their business scenarios remain.
+Tested application commit: `23ee5d2e60824cf735bc333dbcf1068d356c6895` on `codex/lab3-verification`, 2026-09-15. Subsequent evidence/documentation commits do not change the tested application. These are feature-branch results, not final-main results.
 
-| Test ID | Type | AC | Coverage / expected result | Planned file |
-|---|---|---|---|---|
-| UNIT-01 | Unit/security | 01,02 | Salted password verification, wrong passwords, boundaries and transition policy | server/tests/lab-03/security.test.ts |
-| API-01 | API/integration | 01,02,03 | Valid/wrong/inactive login, limited initial session, confirmation/reuse, logout/expiry/reset, safe DTO, CSRF/origin, throttling | server/tests/lab-03/auth.api.test.ts |
-| API-02 | Authorization | 03,04,09,11 | Direct forbidden endpoints, requester spoofing, cross-owner ticket/attachment, private note exclusion, role/activation changes | server/tests/lab-03/authorization.api.test.ts |
-| API-03 | API | 06 | Search, combined filters, priority sort, pagination boundaries, invalid query | server/tests/lab-03/staff-queue.api.test.ts |
-| API-04 | API | 07,08,10 | Claim conflict, assignee validity, stale writes, every transition, confirmation, requester signal | server/tests/lab-03/staff-ticket-detail.api.test.ts |
-| API-05 | API/security | 09 | Public/private role access, blank/length boundaries, author/time, append-only methods | server/tests/lab-03/comments-notes.api.test.ts |
-| API-06 | API/concurrency | 11 | User list/search/filter/create/edit/reset, case duplicate, invalid role, self/last-admin protections including races | server/tests/lab-03/users-admin.api.test.ts |
-| REG-01 | Regression/API | 04,05 | Lab 2 create/read/list/query and attachment lifecycle now authenticated | server/tests/lab-02/*.test.ts |
-| MIG-01 | Migration/regression | 12 | Apply migration to existing Lab 2 fixture, unchanged IDs/ownership/files and priority backfill, repeat seed | server/tests/lab-03/migration.test.ts |
-| UI-01 | Component | 02,13 | Login validation/busy/failure, initial password validation and success, role shell | client/tests/lab-03/Login.test.tsx; ChangePassword.test.tsx |
-| UI-02 | Component | 06,13 | Queue search/filter/page requests, empty/no-results/failure | client/tests/lab-03/StaffTicketQueue.test.tsx |
-| UI-03 | Component | 07,09,10,13 | Detail operational controls/confirm/conflict, private composer vs public, requester signal | client/tests/lab-03/StaffTicketDetail.test.tsx |
-| UI-04 | Component | 11,13 | User list/create/edit/reset/errors, password clearing and safety controls | client/tests/lab-03/UserManagement.test.tsx |
-| E2E-01 | End-to-end | 01,02,03,13,15 | Actual login/first-change/logout and blocked reuse | e2e/lab-03/authentication.spec.ts |
-| E2E-02 | End-to-end/regression | 04,05,07,08,09,10,15 | Requester creates with attachment; staff claims/comments/notes/resolves; requester privacy and signal | e2e/lab-03/staff-ticket-flow.spec.ts |
-| E2E-03 | End-to-end | 11,15 | Admin creates/edits/resets account; login requires new password | e2e/lab-03/user-administration.spec.ts |
-| VIS-01 | UI style/responsive | 14 | 3 viewport screenshots, no page overflow, native focus/labels, visual checklist | e2e/lab-03/responsive-screenshots.spec.ts |
+## Results
 
-Use an isolated local PostgreSQL database for tests, never reset the existing development database. API tests use real Prisma/Express and uniquely named fixture users; client tests stub API responses for UI edge cases. TDD: write policy/security expectations first, observe failures before implementation, record actual results. Integration and E2E use no auth bypass.
+PASS: 13 server suites / 160 tests; 7 client files / 26 tests; 15 browser scenarios; server TypeScript, client TypeScript and Vite builds. Migration preservation and repeated seed PASS. Full outputs are linked below.
 
-Final evidence must include commands, date, branch/commit, totals and output paths. Feature-branch results are not final-main results. Peer approvals and personal reflection must be provided by the real participants.
+## Reproduce
+
+Use Node.js and local PostgreSQL. Install root, server and client dependencies. Point ignored server/.env at the isolated `toktickit_lab3_test` database with migrated/seeded Lab 2 fixtures; the Jest guard refuses other database names. Never run tests against development data. Start the API from server with PORT=4103 and APP_ORIGIN=http://localhost:5183. Start Vite from client on port 5183 with VITE_API_URL=http://localhost:4103. Install Microsoft Edge for the configured Playwright channel.
+
+From the repository root run `node scripts/verify-lab3.cjs`. It runs these commands sequentially and stops on failure:
+
+| Directory | Command |
+|---|---|
+| server | `node node_modules/jest/bin/jest.js --runInBand --testTimeout=15000` |
+| server | `node node_modules/typescript/bin/tsc` |
+| client | `node node_modules/vitest/vitest.mjs run` |
+| client | `node node_modules/typescript/bin/tsc -b` |
+| client | `node node_modules/vite/bin/vite.js build` |
+| root | `node node_modules/@playwright/test/cli.js test --config playwright.lab3.config.ts` |
+
+[Machine-readable report](../../artifacts/lab-03/verification/report.json) records the exact tested commit, commands and exit statuses. Its sibling .log files contain actual outputs and totals. The 15-second Jest deadline accommodates scrypt tests on this machine without weakening assertions.
+
+## Executed coverage
+
+| Area / acceptance criteria | Actual test files |
+|---|---|
+| Password hashing/policy (AC01–02) | server/tests/lab-03/security.test.ts |
+| Login, change gate, sessions, origin/CSRF, expiry, throttling (AC01–03) | server/tests/lab-03/auth.api.test.ts |
+| Spoofed requester IDs, foreign reads/uploads, concurrent attachment limit (AC04–05) | server/tests/lab-03/requester.api.test.ts |
+| Lab 1/2 regression, create/list/search/filter/pagination/attachments (AC04–05) | server/tests/lab-01/*.test.ts; server/tests/lab-02/*.test.ts |
+| Queue permissions, combined filters, stable sorting, pagination (AC06) | server/tests/staff-queue.test.ts |
+| Ownership, every transition pair, confirmation, concurrent claims/updates, signal (AC07–08,10) | server/tests/workflow.test.ts |
+| Public/private roles, boundaries, author/time, append-only methods (AC09) | server/tests/workflow.test.ts |
+| Account CRUD scope, safe DTO, normalized duplicates, resets, self/last-admin races (AC11) | server/tests/users.test.ts |
+| Initial password/session UI and requester components (AC02,05,13) | client/tests/lab-03/Auth.test.tsx; client/tests/lab-02/*.test.tsx |
+| Queue feedback and filtering (AC06,13) | client/tests/lab-03/TicketQueue.test.tsx |
+| Workflow confirmation/conflicts, privacy, safe text and signal (AC07,09–10,13) | client/tests/lab-03/TicketActivity.test.tsx |
+| Account drafts, validation/errors, confirmations and password clearing (AC11,13) | client/tests/lab-03/Users.test.tsx |
+| Real login/change/create/upload/download/remove/filter/reload/logout; keyboard Open (AC01–05,14–15) | e2e/lab-03/requester.spec.ts |
+| Staff/admin queue and read-only attachment controls (AC06,14–15) | e2e/lab-03/queue.spec.ts |
+| Staff claim/status/public/private posts, requester reply/signal, reopen, admin read-only (AC07–10,14–15) | e2e/lab-03/workflow.spec.ts |
+| Admin create/edit/deactivate/reactivate/reset, mandatory new password (AC11,14–15) | e2e/lab-03/users.spec.ts |
+
+## Migration and repeated seed (AC12)
+
+Run `node scripts/verify-migration.cjs <Lab2-backup.dump> <PostgreSQL-bin-directory>`. It creates a new local evidence database, restores the supplied backup, compares every original column before/after the additive migration, checks IT priority backfill, seeds twice and compares complete rows. It never migrates the configured source database. A generated initial password stays only in the child process environment.
+
+[Migration report](../../artifacts/lab-03/issue7-migration.json): all original rows/columns preserved for 5 users, 54 tickets, 9 attachment records, 4 categories and 7 related systems. The before/after digests match; zero priority mismatches. After seeding: 10 users, 78 tickets, 9 attachments, 48 entries. Both seed digests match, including stored password hashes. Attachment metadata and stored filenames are covered; physical-file download is exercised separately by requester E2E. The disposable evidence database is retained locally.
+
+## Responsive and accessibility evidence (AC13–14)
+
+Playwright now runs all five scenarios at desktop 1440x1000, tablet 820x1180 and mobile 390x844. Screenshots use `artifacts/lab-03/issue7-<viewport>-...png`:
+
+- login, password-change, create-ticket, tickets: requester workflow;
+- IT_STAFF / ADMINISTRATOR: queue;
+- staff / requester / admin: ticket detail and public/private sections;
+- users / edit: account list and editor.
+
+The visual review covers readable text/status badges, editable versus read-only controls, explicit private-note labeling, responsive cards, form wrapping and page overflow. Keyboard review identified mouse-only requester rows and sort headers; these now contain native buttons. Attachment upload/removal inputs now have accessible names. Focus outlines and an active administrator navigation state are explicit. Queue and requester Open actions are exercised with keyboard focus/Enter. Negative API/component tests cover validation, permission, conflict and failure feedback; screenshots document successful screens and password-reset feedback.
+
+Peer approval and final-main verification remain required before release. The student's personal reflection is not generated as evidence.

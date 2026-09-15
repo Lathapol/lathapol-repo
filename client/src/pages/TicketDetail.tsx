@@ -171,6 +171,7 @@ export default function TicketDetail({ ticketId, onBack, readOnly = false, viewe
           <div className="mb-3">
             <input
               type="file"
+              aria-label="Upload attachment"
               className="form-control"
               accept=".jpg,.jpeg,.png,.webp,.pdf"
               onChange={handleFileSelected}
@@ -217,6 +218,7 @@ export default function TicketDetail({ ticketId, onBack, readOnly = false, viewe
                         type="text"
                         className="form-control form-control-sm"
                         placeholder="Reason"
+                        aria-label="Attachment removal reason"
                         value={removeReason}
                         onChange={(e) => setRemoveReason(e.target.value)}
                         style={{ width: 140 }}
