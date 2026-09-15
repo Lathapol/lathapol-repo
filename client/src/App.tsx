@@ -78,7 +78,7 @@ function RoleHome(){
   return <RequesterProvider key={user.id} initialRequester={user}>
     <nav className="navbar queue-nav"><div className="container"><strong>TokTickIT</strong><span>{user.name} · {user.role==='IT_STAFF'?'IT Staff':'Administrator'}</span><button className="btn btn-outline-light" disabled={busy} onClick={async()=>{setBusy(true);try{await logout()}catch{setError('Unable to sign out. Please retry.')}finally{setBusy(false)}}}>Sign out</button></div></nav>
     {error&&<p role="alert">{error}</p>}
-    {ticketId===null?<TicketQueue onOpenTicket={setTicketId}/>:<TicketDetail ticketId={ticketId} readOnly onBack={()=>setTicketId(null)}/>}
+    {ticketId===null?<TicketQueue onOpenTicket={setTicketId}/>:<TicketDetail ticketId={ticketId} viewerRole={user.role} readOnly onBack={()=>setTicketId(null)}/>}
   </RequesterProvider>
 }
 function App(){

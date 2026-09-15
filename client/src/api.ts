@@ -155,6 +155,12 @@ export interface AttachmentItem {
 }
 
 export interface TicketDetail {
+  requester?: { name: string }
+  owner?: QueueOwner | null
+  ownerId?: number | null
+  itPriority?: string
+  version?: number
+  requesterResolvedAt?: string | null
   id: number
   ticketNumber: string
   summary: string
@@ -251,4 +257,18 @@ export async function fetchQueue(params: Record<string, string>): Promise<QueueR
 }
 export async function fetchOwners(): Promise<QueueOwner[]> {
   return (await apiFetch(`${API_URL}/api/staff/owners`)).json()
+}
+
+export interface TicketEntry { id: number; body: string; createdAt: string; author: { id: number; name: string } }
+export async function fetchEntries(id: number, kind: 'comments' | 'notes'): Promise<TicketEntry[]> {
+  return (await apiFetch(`${API_URL}/api/tickets/${id}/${kind}`)).json()
+}
+export async function postEntry(id: number, kind: 'comments' | 'notes', body: string): Promise<TicketEntry> {
+  return (await apiFetch(`${API_URL}/api/tickets/${id}/${kind}`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({body})})).json()
+}
+export async function updateWorkflow(id: number, data: { version: number; ownerId?: number | null; itPriority?: string; currentStatus?: string; confirmed?: boolean }, claim = false) {
+  return (await apiFetch(`${API_URL}/api/staff/tickets/${id}${claim ? '/claim' : ''}`, {method:claim?'POST':'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})).json()
+}
+export async function appearsResolved(id: number) {
+  return (await apiFetch(`${API_URL}/api/tickets/${id}/appears-resolved`, {method:'POST'})).json()
 }

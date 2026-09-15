@@ -1,4 +1,5 @@
-﻿import { staffRouter } from './staff';
+﻿import { workflowRouter } from './workflow';
+import { staffRouter } from './staff';
 import express from "express";
 import cors from "cors";
 import fs from "fs";
@@ -24,6 +25,7 @@ app.use('/api', originGuard);
 app.use('/api/auth', authRouter);
 app.use('/api', authenticate, completedPassword, csrf);
 app.use('/api/staff', staffRouter);
+app.use('/api', workflowRouter);
 app.param('id',(req,res,next,value)=>{if(!/^[1-9]\d*$/.test(value)||!Number.isSafeInteger(Number(value)))return res.status(400).json({error:{code:'INVALID_ID',message:'Invalid resource ID.'}});next();});
 
 app.get("/api/categories", async (req, res) => {
@@ -202,6 +204,8 @@ app.get("/api/tickets/:id", async (req, res) => {
       include: {
         category: { select: { name: true } },
         relatedSystem: { select: { name: true } },
+        requester: { select: { name: true } },
+        owner: { select: { id: true, name: true, role: true, isActive: true } },
         attachments: {
           orderBy: { uploadedAt: "asc" },
         },
@@ -217,6 +221,12 @@ app.get("/api/tickets/:id", async (req, res) => {
       ticketNumber: ticket.ticketNumber,
       summary: ticket.summary,
       description: ticket.description,
+      requester: ticket.requester,
+      owner: ticket.owner,
+      ownerId: ticket.ownerId,
+      itPriority: ticket.itPriority,
+      version: ticket.version,
+      requesterResolvedAt: ticket.requesterResolvedAt,
       category: ticket.category.name,
       relatedSystem: ticket.relatedSystem.name,
       requestedPriority: ticket.requestedPriority,

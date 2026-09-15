@@ -219,3 +219,15 @@
   .queue-search, .queue-actions { grid-column: auto; }
   .queue-pagination { gap: 8px; }
 }
+
+.ticket-activity { text-align: left; }
+.workflow-fields { display: grid; gap: 16px; grid-template-columns: repeat(3,minmax(0,1fr)); }
+.workflow-fields label { display: flex; flex-direction: column; gap: 8px; }
+.workflow-fields .workflow-confirm { flex-direction: row; align-items: center; grid-column: 1/-1; }
+.workflow-buttons { display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1/-1; }
+.ticket-activity button { min-height: 44px; }
+.entry-list { list-style: none; padding: 0; }
+.entry-list li { border-top: 1px solid #d5dfd8; padding: 16px 0; }
+.entry-body { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 8px; }
+.internal-notes { border: 2px solid #69796c; background: #f2f5f3; }
+@media(max-width:767px) { .workflow-fields { grid-template-columns: 1fr; } }

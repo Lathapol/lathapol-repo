@@ -1,3 +1,4 @@
+import TicketActivity from '../components/TicketActivity'
 import { useEffect, useState } from "react"
 import {
   fetchTicketDetail,
@@ -11,12 +12,13 @@ import { useRequester } from "../context/RequesterContext"
 type LoadState = "loading" | "success" | "error"
 
 interface Props {
+  viewerRole?: 'REQUESTER' | 'IT_STAFF' | 'ADMINISTRATOR'
   readOnly?: boolean
   ticketId: number
   onBack: () => void
 }
 
-export default function TicketDetail({ ticketId, onBack, readOnly = false }: Props) {
+export default function TicketDetail({ ticketId, onBack, readOnly = false, viewerRole = 'REQUESTER' }: Props) {
   const { requester } = useRequester()
   const [loadState, setLoadState] = useState<LoadState>("loading")
   const [ticket, setTicket] = useState<TicketDetailType | null>(null)
@@ -157,6 +159,8 @@ export default function TicketDetail({ ticketId, onBack, readOnly = false }: Pro
           </div>
         </div>
       </div>
+
+      {ticket.version !== undefined && <TicketActivity ticket={ticket} role={viewerRole} onRefresh={loadTicket}/>}
 
       <div className="card p-4">
         <h2 className="h5 mb-3">Attachments ({activeAttachments.length}/5 active)</h2>

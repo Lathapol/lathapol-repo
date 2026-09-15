@@ -20,3 +20,5 @@ Issue 3 continuation: user requested the `lab3 issueX : name` title style and sa
 Pending the student's own reflection. Discuss one specification choice you checked, one coding/test issue you investigated, what the agent helped with, and what you personally verified. The assignment asks for 6-10 selected real prompts; three substantive prompts are currently available. Add genuine later prompts, not invented historical conversations.
 
 Issue 4 continuation: user said "continue". Codex implemented the shared queue API/UI, permission/filter/pagination tests, read-only detail integration and responsive browser checks. Corrected test fixture email casing after a login test failure. Actual results and evidence are in issue-04.md; coworker review remains pending.
+
+Issue 5 continuation: user said "continue on". Codex implemented staff workflow, append-only communication and requester apparent resolution, tested all transition pairs and concurrent writes, and verified role privacy through real APIs and browser flows. Fixed an E2E select locator after a timeout. Evidence is in issue-05.md; peer review is pending.
