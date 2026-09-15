@@ -18,9 +18,10 @@ test.beforeEach(async()=>{
 test('login, first change, create with attachment, filter, reload, remove and logout',async({page},info)=>{
   await page.goto('/');
   await page.getByLabel('Email',{exact:true}).fill(email);await page.getByLabel('Password',{exact:true}).fill(initial);
-  await page.screenshot({path:`artifacts/lab-03/issue3-${info.project.name}-login.png`});
+  await page.screenshot({path:`artifacts/lab-03/issue7-${info.project.name}-login.png`});
   await page.getByRole('button',{name:'Sign in',exact:true}).click();
   await expect(page.getByRole('heading',{name:'Change your initial password'})).toBeVisible();
+  await page.screenshot({path:`artifacts/lab-03/issue7-${info.project.name}-password-change.png`,fullPage:true});
   await expect(page.getByRole('button',{name:'My Tickets',exact:true})).toHaveCount(0);
   await page.getByLabel('Current password',{exact:true}).fill(initial);await page.getByLabel('New password',{exact:true}).fill(changed);await page.getByLabel('Confirm new password',{exact:true}).fill(changed);
   await page.getByRole('button',{name:'Change password',exact:true}).click();
@@ -29,12 +30,16 @@ test('login, first change, create with attachment, filter, reload, remove and lo
   await page.getByLabel('Category').selectOption('1');await page.getByLabel('Related System').selectOption('1');
   await page.getByLabel('Summary').fill('Browser workflow verification');await page.getByLabel('Description').fill('Verify authenticated creation and attachment persistence.');
   await page.locator('input[type=file]').setInputFiles({name:'example.pdf',mimeType:'application/pdf',buffer:Buffer.from('%PDF-1.4 lab test')});
+  await page.screenshot({path:`artifacts/lab-03/issue7-${info.project.name}-create-ticket.png`,fullPage:true});
   await page.getByRole('button',{name:'Submit Ticket'}).click();await expect(page.getByText('Ticket Created',{exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Open ticket',exact:true}).click();await expect(page.getByText('example.pdf',{exact:true})).toBeVisible();
   const download=page.waitForEvent('download');await page.getByRole('button',{name:'Download',exact:true}).click();await download;
   await page.getByRole('button',{name:'Remove',exact:true}).click();await page.getByPlaceholder('Reason',{exact:true}).fill('Wrong attachment');await page.getByRole('button',{name:'Confirm',exact:true}).click();await expect(page.getByText('Removed: Wrong attachment')).toBeVisible();
   await page.getByRole('button',{name:'My Tickets',exact:true}).click();await page.getByLabel('Search tickets').fill('Browser workflow verification');await expect(page.getByText('Browser workflow verification',{exact:true}).filter({visible:true}).first()).toBeVisible();
-  await page.screenshot({path:`artifacts/lab-03/issue3-${info.project.name}-tickets.png`,fullPage:true});
+  const ticketLink=page.getByRole('button',{name:/^Open TKT/}).filter({visible:true}).first();
+  await ticketLink.focus();await expect(ticketLink).toBeFocused();
+  await page.screenshot({path:`artifacts/lab-03/issue7-${info.project.name}-tickets.png`,fullPage:true});
+  await page.keyboard.press('Enter');await expect(page.getByRole('button',{name:'Back to My Tickets'})).toBeVisible();await page.getByRole('button',{name:'My Tickets',exact:true}).click();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
   await page.reload();await expect(page.getByRole('heading',{name:'My Tickets',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Sign out',exact:true}).click();await expect(page.getByRole('button',{name:'Sign in',exact:true})).toBeVisible();

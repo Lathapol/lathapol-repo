@@ -19,11 +19,11 @@ for(const role of ['IT_STAFF','ADMINISTRATOR']) {
    if(role==='ADMINISTRATOR')await page.getByRole('button',{name:'Ticket Queue',exact:true}).click();
    await expect(page.getByRole('heading',{name:'Ticket Queue',exact:true})).toBeVisible();
    const open=page.getByRole('button',{name:/^Open /}).filter({visible:true}).first();await expect(open).toBeVisible();
-   await page.screenshot({path:`artifacts/lab-03/issue4-${info.project.name}-${role}.png`,fullPage:true});
+   await page.screenshot({path:`artifacts/lab-03/issue7-${info.project.name}-${role}.png`,fullPage:true});
    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
    if(info.project.name==='desktop' && role==='IT_STAFF'){
     await page.setViewportSize({width:820,height:1180});
-    await page.screenshot({path:'artifacts/lab-03/issue4-tablet-IT_STAFF.png',fullPage:true});
+    await page.screenshot({path:'artifacts/lab-03/issue7-tablet-IT_STAFF.png',fullPage:true});
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
    }
    await open.focus();await page.keyboard.press('Enter');

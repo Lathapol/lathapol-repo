@@ -31,16 +31,16 @@ test('staff workflow, private notes, requester signal and admin read-only view',
     await page.getByRole('combobox',{name:'IT priority',exact:true}).selectOption('HIGH');await saveStatus('OPEN');
     await page.getByLabel('New internal note').fill('Private diagnosis: inspect the print service.');await page.getByRole('button',{name:'Post internal note'}).click();await expect(page.getByText('Internal note posted.',{exact:true})).toBeVisible();
     await page.getByLabel('New public comment').fill('Please try printing again.');await page.getByRole('button',{name:'Post comment'}).click();await expect(page.getByText('Comment posted.',{exact:true})).toBeVisible();
-    await page.screenshot({path:`artifacts/lab-03/issue5-${info.project.name}-staff.png`,fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
-    if(info.project.name==='desktop'){await page.setViewportSize({width:820,height:1180});await page.screenshot({path:'artifacts/lab-03/issue5-tablet-staff.png',fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);await page.setViewportSize({width:1440,height:1000})}
+    await page.screenshot({path:`artifacts/lab-03/issue7-${info.project.name}-staff.png`,fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+    if(info.project.name==='desktop'){await page.setViewportSize({width:820,height:1180});await page.screenshot({path:'artifacts/lab-03/issue7-tablet-staff.png',fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);await page.setViewportSize({width:1440,height:1000})}
     await logout();await login(1);await page.getByText(summary,{exact:true}).filter({visible:true}).first().click();await expect(page.getByText('Please try printing again.',{exact:true})).toBeVisible();
     await expect(page.getByText('Internal Notes',{exact:true})).toHaveCount(0);await expect(page.getByText('Private diagnosis: inspect the print service.',{exact:true})).toHaveCount(0);
     await page.getByRole('button',{name:'This appears resolved'}).click();await expect(page.getByText(/Requester reported apparent resolution/)).toBeVisible();
     await page.getByLabel('New public comment').fill('Printing works now, thanks.');await page.getByRole('button',{name:'Post comment'}).click();await expect(page.getByText('Comment posted.',{exact:true})).toBeVisible();
-    await page.screenshot({path:`artifacts/lab-03/issue5-${info.project.name}-requester.png`,fullPage:true});
+    await page.screenshot({path:`artifacts/lab-03/issue7-${info.project.name}-requester.png`,fullPage:true});
     await logout();await login(0);await openStaff();await saveStatus('RESOLVED');await saveStatus('REOPENED');await expect(page.getByText(/Requester reported apparent resolution/)).toHaveCount(0);
     await logout();await login(2);await openStaff();await expect(page.getByText('Private diagnosis: inspect the print service.',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Save changes'})).toHaveCount(0);await expect(page.getByLabel('New public comment')).toHaveCount(0);await expect(page.getByLabel('New internal note')).toHaveCount(0);
-    await page.screenshot({path:`artifacts/lab-03/issue5-${info.project.name}-admin.png`,fullPage:true});await logout();
+    await page.screenshot({path:`artifacts/lab-03/issue7-${info.project.name}-admin.png`,fullPage:true});await logout();
   }finally{
     if(ticketId){await db.query('DELETE FROM "TicketEntry" WHERE "ticketId"=$1',[ticketId]);await db.query('DELETE FROM "Ticket" WHERE id=$1',[ticketId])}
     for(const user of users){await db.query('DELETE FROM "Session" WHERE "userId"=$1',[user.id]);await db.query('DELETE FROM "RequesterUser" WHERE id=$1',[user.id])}await db.end();

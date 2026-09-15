@@ -171,25 +171,19 @@ export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
             <table className="table table-hover align-middle">
               <thead>
                 <tr>
-                  <th role="button" onClick={() => handleSort("ticketNumber")}>
-                    Ticket No.
-                  </th>
-                  <th role="button" onClick={() => handleSort("createdAt")}>
-                    Created Date
-                  </th>
+                  <th scope="col"><button className="btn btn-link p-0" onClick={() => handleSort("ticketNumber")}>Ticket No.</button></th>
+                  <th scope="col"><button className="btn btn-link p-0" onClick={() => handleSort("createdAt")}>Created Date</button></th>
                   <th>Summary</th>
                   <th>Category</th>
                   <th>Requested Priority</th>
                   <th>Current Status</th>
-                  <th role="button" onClick={() => handleSort("updatedAt")}>
-                    Last Updated
-                  </th>
+                  <th scope="col"><button className="btn btn-link p-0" onClick={() => handleSort("updatedAt")}>Last Updated</button></th>
                 </tr>
               </thead>
               <tbody>
                 {tickets.map((t) => (
-                  <tr key={t.id} role="button" onClick={() => onOpenTicket(t.id)}>
-                    <td className="fw-semibold">{t.ticketNumber}</td>
+                  <tr key={t.id} onClick={() => onOpenTicket(t.id)}>
+                    <td className="fw-semibold"><button className="btn btn-link p-0" aria-label={`Open ${t.ticketNumber}`} onClick={e=>{e.stopPropagation();onOpenTicket(t.id)}}>{t.ticketNumber}</button></td>
                     <td>{new Date(t.createdAt).toLocaleString()}</td>
                     <td>{t.summary}</td>
                     <td>{t.category}</td>
@@ -215,7 +209,6 @@ export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
               <div
                 key={t.id}
                 className="card mb-2 p-3"
-                role="button"
                 onClick={() => onOpenTicket(t.id)}
               >
                 <div className="d-flex justify-content-between">
@@ -225,6 +218,7 @@ export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
                   </span>
                 </div>
                 <div className="text-muted small">{t.summary}</div>
+                <button className="btn btn-outline-success mt-2" aria-label={`Open ${t.ticketNumber}`} onClick={e=>{e.stopPropagation();onOpenTicket(t.id)}}>Open ticket</button>
                 <div className="d-flex justify-content-between mt-2 small">
                   <span>{t.category}</span>
                   <span className="badge bg-warning-subtle text-dark">

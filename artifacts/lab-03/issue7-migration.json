@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-09-15T10:07:11.153Z",
+  "database": "toktickit_lab3_evidence_1789466804331",
+  "sourceBackupSha256": "f544a6a22f28d16bbc230b0df40fbd1c79073f133f3d6011c76c71207967f53d",
+  "originalCounts": {
+    "RequesterUser": 5,
+    "Ticket": 54,
+    "Attachment": 9,
+    "Category": 4,
+    "RelatedSystem": 7
+  },
+  "preservedOriginalColumns": true,
+  "originalDigest": "42a615949b219f5542cb50fc825e32889475dcd085c2407c91c75fa7f79f00f2",
+  "afterMigrationDigest": "42a615949b219f5542cb50fc825e32889475dcd085c2407c91c75fa7f79f00f2",
+  "priorityBackfillMismatches": 0,
+  "seedCounts": {
+    "RequesterUser": 10,
+    "Ticket": 78,
+    "Attachment": 9,
+    "Category": 4,
+    "RelatedSystem": 7,
+    "TicketEntry": 48
+  },
+  "firstSeedDigest": "8ac96926dc65047b7bb974ef3df23e19d41a435b1cf62415bc653372c346f2f6",
+  "secondSeedDigest": "8ac96926dc65047b7bb974ef3df23e19d41a435b1cf62415bc653372c346f2f6",
+  "repeatSeedUnchanged": true
+}

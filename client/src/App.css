@@ -245,3 +245,7 @@
 .user-cards { display: none; }
 @media(max-width:991px) { .users-table { display: none; } .user-cards { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:16px; } .user-cards article { overflow-wrap: anywhere; } .user-filters { grid-template-columns: 1fr 1fr; } }
 @media(max-width:767px) { .user-cards, .user-filters { grid-template-columns: 1fr; } }
+
+button:focus-visible, a:focus-visible { outline: 3px solid #006B3C; outline-offset: 3px; }
+.queue-nav button:focus-visible { outline-color: white; }
+.queue-nav button[aria-current="page"] { background: #EAF6EF; color: #006B3C; }
