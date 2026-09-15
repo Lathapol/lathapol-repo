@@ -53,7 +53,7 @@ Frontend runs on http://localhost:5173
 - Category list from PostgreSQL
 
 ### Lab 2 — Requester Ticketing MVP
-- Development Requester Selection (temporary testing identity, not real auth)
+- Original development selector (replaced by authenticated accounts in Lab 3)
 - Create Ticket with validation and attachment upload
 - My Tickets: search, filter, sort, pagination
 - Ticket Detail: read-only ticket info, attachment download and soft-removal
@@ -79,3 +79,10 @@ npx playwright test
 ```
 
 ## Project Structure
+
+
+## Lab 3 — Authenticated support workflow
+
+Lab 3 adds cookie sessions and required initial-password replacement, the requester workflow, staff ticket queue/assignment/status/comments/private notes, requester apparent resolution, and administrator account management. Administrators can read tickets but cannot perform staff mutations.
+
+See [local account setup](docs/lab-03/issue-02.md), [API contract](docs/lab-03/api-spec.md), and [integrated verification instructions/results](docs/lab-03/tests.md). Use a separate `toktickit_lab3_test` database for tests. `node scripts/verify-lab3.cjs` runs backend/client tests, builds and the desktop/tablet/mobile browser suite against the local test services. This feature branch still requires peer review and final-main verification.
