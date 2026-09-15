@@ -231,3 +231,17 @@
 .entry-body { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 8px; }
 .internal-notes { border: 2px solid #69796c; background: #f2f5f3; }
 @media(max-width:767px) { .workflow-fields { grid-template-columns: 1fr; } }
+
+.users-page { max-width: 1200px; text-align: left; }
+.user-filters { display: grid; grid-template-columns: 2fr 1fr auto; gap: 16px; align-items: end; }
+.user-form { display: grid; gap: 16px; }
+.user-form label, .user-filters label { display: flex; flex-direction: column; gap: 8px; }
+.user-form .user-check { flex-direction: row; align-items: center; }
+.user-editor { max-width: 720px; }
+.user-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.users-page button { min-height: 44px; }
+.users-table { table-layout: fixed; }
+.users-table td { overflow-wrap: anywhere; vertical-align: middle; }
+.user-cards { display: none; }
+@media(max-width:991px) { .users-table { display: none; } .user-cards { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:16px; } .user-cards article { overflow-wrap: anywhere; } .user-filters { grid-template-columns: 1fr 1fr; } }
+@media(max-width:767px) { .user-cards, .user-filters { grid-template-columns: 1fr; } }
