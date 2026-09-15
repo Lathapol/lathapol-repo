@@ -14,6 +14,7 @@ test('staff workflow, private notes, requester signal and admin read-only view',
   const suffix=Date.now(),summary=`Workflow browser ${suffix}`;
   async function login(index:number){
     await page.goto('/');await page.getByLabel('Email',{exact:true}).fill(users[index].email);await page.getByLabel('Password',{exact:true}).fill(password);await page.getByRole('button',{name:'Sign in',exact:true}).click();
+    if(index===2)await page.getByRole('button',{name:'Ticket Queue',exact:true}).click();
     await expect(page.getByRole('heading',{name:index===1?'My Tickets':'Ticket Queue',exact:true})).toBeVisible();
   }
   async function logout(){await page.getByRole('button',{name:'Sign out',exact:true}).click();await expect(page.getByRole('button',{name:'Sign in',exact:true})).toBeVisible()}

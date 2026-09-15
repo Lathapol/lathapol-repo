@@ -272,3 +272,16 @@ export async function updateWorkflow(id: number, data: { version: number; ownerI
 export async function appearsResolved(id: number) {
   return (await apiFetch(`${API_URL}/api/tickets/${id}/appears-resolved`, {method:'POST'})).json()
 }
+
+export interface ManagedUser { id: number; name: string; email: string; role: 'REQUESTER'|'IT_STAFF'|'ADMINISTRATOR'; isActive: boolean; mustChangePassword: boolean }
+export type UserFields = Pick<ManagedUser,'name'|'email'|'role'|'isActive'>
+export async function fetchUsers(search = '', role = ''): Promise<ManagedUser[]> {
+  const query=new URLSearchParams();if(search)query.set('search',search);if(role)query.set('role',role)
+  return (await apiFetch(`${API_URL}/api/users?${query}`)).json()
+}
+export async function saveUser(data:UserFields & {initialPassword?:string},id?:number):Promise<ManagedUser> {
+  return (await apiFetch(`${API_URL}/api/users${id?`/${id}`:''}`,{method:id?'PATCH':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)})).json()
+}
+export async function resetUserPassword(id:number,initialPassword:string):Promise<ManagedUser> {
+  return (await apiFetch(`${API_URL}/api/users/${id}/initial-password`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({initialPassword})})).json()
+}

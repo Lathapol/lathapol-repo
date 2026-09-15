@@ -16,6 +16,7 @@ for(const role of ['IT_STAFF','ADMINISTRATOR']) {
   const user=await db.query('INSERT INTO "RequesterUser" (name,email,"passwordHash",role,"mustChangePassword","updatedAt") VALUES ($1,$2,$3,$4,false,NOW()) RETURNING id',['Queue Reviewer',email,hash,role]);
   try {
    await page.goto('/');await page.getByLabel('Email',{exact:true}).fill(email);await page.getByLabel('Password',{exact:true}).fill(password);await page.getByRole('button',{name:'Sign in',exact:true}).click();
+   if(role==='ADMINISTRATOR')await page.getByRole('button',{name:'Ticket Queue',exact:true}).click();
    await expect(page.getByRole('heading',{name:'Ticket Queue',exact:true})).toBeVisible();
    const open=page.getByRole('button',{name:/^Open /}).filter({visible:true}).first();await expect(open).toBeVisible();
    await page.screenshot({path:`artifacts/lab-03/issue4-${info.project.name}-${role}.png`,fullPage:true});
