@@ -11,11 +11,12 @@ import { useRequester } from "../context/RequesterContext"
 type LoadState = "loading" | "success" | "error"
 
 interface Props {
+  readOnly?: boolean
   ticketId: number
   onBack: () => void
 }
 
-export default function TicketDetail({ ticketId, onBack }: Props) {
+export default function TicketDetail({ ticketId, onBack, readOnly = false }: Props) {
   const { requester } = useRequester()
   const [loadState, setLoadState] = useState<LoadState>("loading")
   const [ticket, setTicket] = useState<TicketDetailType | null>(null)
@@ -81,7 +82,7 @@ export default function TicketDetail({ ticketId, onBack }: Props) {
           Unable to load this ticket. It may not exist or you may not have access to it.
         </div>
         <button className="btn btn-secondary" onClick={onBack}>
-          Back to My Tickets
+          {readOnly ? 'Back to Ticket Queue' : 'Back to My Tickets'}
         </button>
       </div>
     )
@@ -92,7 +93,7 @@ export default function TicketDetail({ ticketId, onBack }: Props) {
   return (
     <div className="container py-4" style={{ maxWidth: 900 }}>
       <button className="btn btn-link px-0 mb-3" onClick={onBack}>
-        Back to My Tickets
+        {readOnly ? 'Back to Ticket Queue' : 'Back to My Tickets'}
       </button>
 
       <div className="card p-4 mb-4">
@@ -162,7 +163,7 @@ export default function TicketDetail({ ticketId, onBack }: Props) {
 
         {uploadError && <div className="alert alert-danger">{uploadError}</div>}
 
-        {activeAttachments.length < 5 && (
+        {!readOnly && activeAttachments.length < 5 && (
           <div className="mb-3">
             <input
               type="file"
@@ -206,7 +207,7 @@ export default function TicketDetail({ ticketId, onBack }: Props) {
                     Download
                   </button>
 
-                  {removingId === a.id ? (
+                  {!readOnly && (removingId === a.id ? (
                     <div className="d-flex gap-1">
                       <input
                         type="text"
@@ -236,7 +237,7 @@ export default function TicketDetail({ ticketId, onBack }: Props) {
                     >
                       Remove
                     </button>
-                  )}
+                  ))}
                 </div>
               )}
             </li>
