@@ -1,3 +1,14 @@
-git checkout lab1-staging
-git pull
-git checkout -b feature/1-project-foundation
+# Keep source text portable; screenshots and PDFs are binary evidence.
+* text=auto
+*.ts text eol=lf
+*.tsx text eol=lf
+*.js text eol=lf
+*.cjs text eol=lf
+*.mjs text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.sql text eol=lf
+*.png binary
+*.jpg binary
+*.pdf binary
+*.dump binary
