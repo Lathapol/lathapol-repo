@@ -1,26 +1,26 @@
 
 Running 15 tests using 1 worker
 
-  ok  1 [desktop] › e2e\lab-03\queue.spec.ts:10:6 › IT_STAFF queue filters, pagination and read-only detail (3.5s)
-  ok  2 [desktop] › e2e\lab-03\queue.spec.ts:10:6 › ADMINISTRATOR queue filters, pagination and read-only detail (2.1s)
-  ok  3 [desktop] › e2e\lab-03\requester.spec.ts:18:5 › login, first change, create with attachment, filter, reload, remove and logout (3.9s)
-  ok  4 [desktop] › e2e\lab-03\users.spec.ts:8:5 › admin creates, edits, deactivates and resets an account; user must change password (4.6s)
-  ok  5 [desktop] › e2e\lab-03\workflow.spec.ts:10:5 › staff workflow, private notes, requester signal and admin read-only view (6.9s)
-  ok  6 [mobile] › e2e\lab-03\queue.spec.ts:10:6 › IT_STAFF queue filters, pagination and read-only detail (3.1s)
-  ok  7 [mobile] › e2e\lab-03\queue.spec.ts:10:6 › ADMINISTRATOR queue filters, pagination and read-only detail (3.5s)
-  ok  8 [mobile] › e2e\lab-03\requester.spec.ts:18:5 › login, first change, create with attachment, filter, reload, remove and logout (4.2s)
-  ok  9 [mobile] › e2e\lab-03\users.spec.ts:8:5 › admin creates, edits, deactivates and resets an account; user must change password (6.0s)
-  ok 10 [mobile] › e2e\lab-03\workflow.spec.ts:10:5 › staff workflow, private notes, requester signal and admin read-only view (6.4s)
-  ok 11 [tablet] › e2e\lab-03\queue.spec.ts:10:6 › IT_STAFF queue filters, pagination and read-only detail (2.3s)
-  ok 12 [tablet] › e2e\lab-03\queue.spec.ts:10:6 › ADMINISTRATOR queue filters, pagination and read-only detail (2.1s)
+  ok  1 [desktop] › e2e\lab-03\queue.spec.ts:10:6 › IT_STAFF queue filters, pagination and read-only detail (3.4s)
+  ok  2 [desktop] › e2e\lab-03\queue.spec.ts:10:6 › ADMINISTRATOR queue filters, pagination and read-only detail (1.9s)
+  ok  3 [desktop] › e2e\lab-03\requester.spec.ts:18:5 › login, first change, create with attachment, filter, reload, remove and logout (4.7s)
+  ok  4 [desktop] › e2e\lab-03\users.spec.ts:8:5 › admin creates, edits, deactivates and resets an account; user must change password (4.3s)
+  ok  5 [desktop] › e2e\lab-03\workflow.spec.ts:10:5 › staff workflow, private notes, requester signal and admin read-only view (6.5s)
+  ok  6 [mobile] › e2e\lab-03\queue.spec.ts:10:6 › IT_STAFF queue filters, pagination and read-only detail (3.2s)
+  ok  7 [mobile] › e2e\lab-03\queue.spec.ts:10:6 › ADMINISTRATOR queue filters, pagination and read-only detail (3.3s)
+  ok  8 [mobile] › e2e\lab-03\requester.spec.ts:18:5 › login, first change, create with attachment, filter, reload, remove and logout (4.3s)
+  ok  9 [mobile] › e2e\lab-03\users.spec.ts:8:5 › admin creates, edits, deactivates and resets an account; user must change password (8.0s)
+  ok 10 [mobile] › e2e\lab-03\workflow.spec.ts:10:5 › staff workflow, private notes, requester signal and admin read-only view (9.2s)
+  ok 11 [tablet] › e2e\lab-03\queue.spec.ts:10:6 › IT_STAFF queue filters, pagination and read-only detail (2.0s)
+  ok 12 [tablet] › e2e\lab-03\queue.spec.ts:10:6 › ADMINISTRATOR queue filters, pagination and read-only detail (1.8s)
   ok 13 [tablet] › e2e\lab-03\requester.spec.ts:18:5 › login, first change, create with attachment, filter, reload, remove and logout (3.7s)
-  ok 14 [tablet] › e2e\lab-03\users.spec.ts:8:5 › admin creates, edits, deactivates and resets an account; user must change password (4.5s)
-  ok 15 [tablet] › e2e\lab-03\workflow.spec.ts:10:5 › staff workflow, private notes, requester signal and admin read-only view (5.5s)
+  ok 14 [tablet] › e2e\lab-03\users.spec.ts:8:5 › admin creates, edits, deactivates and resets an account; user must change password (3.9s)
+  ok 15 [tablet] › e2e\lab-03\workflow.spec.ts:10:5 › staff workflow, private notes, requester signal and admin read-only view (4.9s)
 
-  15 passed (1.1m)
-(node:25744) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+  15 passed (1.2m)
+(node:18280) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:29192) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(node:4344) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)
-(node:26080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(node:9080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
 (Use `node --trace-warnings ...` to show where the warning was created)

@@ -1,18 +1,11 @@
 # lab3 issue8 : Release integration and submission
 
-## Cleanup prepared
+PR #46 delivered setup/ignore cleanup and the submission draft. Kittakorn-P approved and merged it into lab3-staging. PR #47 was approved and merged lab3-staging into main.
 
-- README setup now uses the actual clone directory, deployed migrations, repeatable seed and isolated test instructions.
-- Added server/.env.example with placeholder credentials. Private environments, uploads, builds and transient browser outputs are ignored.
-- Replaced accidental shell commands in .gitattributes with real text/binary attributes; no bulk renormalization.
-- Stopped tracking the transient Playwright .last-run.json while retaining the local file and historical verification evidence.
-- The supplied Lab 2 PDF supplies the cover identity and layout reference.
+Final-main commit: `43e6c0605766586f7bacafde882da1a06ab1e9c2`.
 
-## Remaining release steps
+On 2026-09-16, all 13 server suites / 160 tests, 7 client files / 26 tests, 15 browser scenarios, server/client type checks and Vite build passed on that exact main commit. Full logs and commands are in artifacts/lab-03/verification. Browser evidence was refreshed by that run.
 
-1. Coworker reviews the cleanup PR into lab3-staging.
-2. Coworker reviews and merges the lab3-staging to main release PR.
-3. Rerun scripts/verify-lab3.cjs on the merged main commit using isolated test services; record that exact hash and outputs.
-4. Confirm the AI-assisted reflection, update completed issue/project status, and regenerate the nine-part PDF with final evidence.
+The GitHub Project visibly lists all eight Lab 3 issues in Done. Two unmodified screenshots capture the full list. The final nine-part PDF includes the release reviews, full final-main test outputs, traceability, AI-assisted reflection, and real responsive screenshots. The supplied Lab 2 PDF provided identity/layout reference.
 
-Issue 8 remains open until these steps finish. A draft PDF is not final-main or completed submission evidence.
+Submission evidence is published separately from the tested application commit, so the test report retains the actual tested hash. No application code changed during final evidence preparation.

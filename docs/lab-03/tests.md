@@ -1,6 +1,6 @@
 # Lab 3 integrated verification
 
-Tested application commit: `23ee5d2e60824cf735bc333dbcf1068d356c6895` on `codex/lab3-verification`, 2026-09-15. Subsequent evidence/documentation commits do not change the tested application. These are feature-branch results, not final-main results.
+Tested final-main commit: `43e6c0605766586f7bacafde882da1a06ab1e9c2`, merged in PR #47 and verified on 2026-09-16. The verification checkout was created directly from origin/main before any evidence edits. These outputs are from that exact main commit. Later submission-only edits do not change the application.
 
 ## Results
 
@@ -61,4 +61,4 @@ Playwright now runs all five scenarios at desktop 1440x1000, tablet 820x1180 and
 
 The visual review covers readable text/status badges, editable versus read-only controls, explicit private-note labeling, responsive cards, form wrapping and page overflow. Keyboard review identified mouse-only requester rows and sort headers; these now contain native buttons. Attachment upload/removal inputs now have accessible names. Focus outlines and an active administrator navigation state are explicit. Queue and requester Open actions are exercised with keyboard focus/Enter. Negative API/component tests cover validation, permission, conflict and failure feedback; screenshots document successful screens and password-reset feedback.
 
-Peer approval and final-main verification remain required before release. The student's personal reflection is not generated as evidence.
+Peer approval and final-main verification completed: PR #47 and the recorded final-main report. The AI-assisted reflection is separate from these observed test results.
