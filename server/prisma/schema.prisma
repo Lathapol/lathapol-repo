@@ -18,14 +18,22 @@ model Category {
   tickets   Ticket[]
 }
 
-model RequesterUser {
+model User {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  role Role @default(REQUESTER)
+  passwordHash String?
+  mustChangePassword Boolean @default(true)
+  tickets Ticket[] @relation("SubmittedTickets")
+  ownedTickets Ticket[] @relation("OwnedTickets")
+  sessions Session[]
+  entries TicketEntry[]
 
-  tickets   Ticket[]
+  @@map("RequesterUser")
 }
 
 model RelatedSystem {
@@ -41,7 +49,9 @@ model Ticket {
   id                Int           @id @default(autoincrement())
   ticketNumber      String        @unique
   requesterId       Int
-  requester         RequesterUser @relation(fields: [requesterId], references: [id])
+  requester         User @relation("SubmittedTickets", fields: [requesterId], references: [id])
+  ownerId           Int?
+  owner             User? @relation("OwnedTickets", fields: [ownerId], references: [id])
   categoryId        Int
   category          Category      @relation(fields: [categoryId], references: [id])
   relatedSystemId   Int
@@ -49,14 +59,19 @@ model Ticket {
   summary           String
   description       String
   requestedPriority Priority
+  itPriority        Priority @default(MEDIUM)
+  version           Int @default(0)
+  requesterResolvedAt DateTime?
   currentStatus     TicketStatus  @default(NEW)
   createdAt         DateTime      @default(now())
   updatedAt         DateTime      @updatedAt
 
   attachments       Attachment[]
+  entries           TicketEntry[]
 
   @@index([requesterId])
   @@index([currentStatus])
+  @@index([ownerId])
 }
 
 model Attachment {
@@ -83,4 +98,45 @@ enum Priority {
 
 enum TicketStatus {
   NEW
+  OPEN
+  IN_PROGRESS
+  WAITING_FOR_REQUESTER
+  RESOLVED
+  CLOSED
+  REOPENED
+  CANCELLED
+}
+
+enum Role {
+  REQUESTER
+  IT_STAFF
+  ADMINISTRATOR
+}
+
+enum EntryKind {
+  PUBLIC
+  INTERNAL
+}
+
+model Session {
+  tokenHash String @id
+  userId Int
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  csrfToken String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model TicketEntry {
+  id Int @id @default(autoincrement())
+  ticketId Int
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+  authorId Int
+  author User @relation(fields: [authorId], references: [id])
+  kind EntryKind
+  body String
+  createdAt DateTime @default(now())
+  @@index([ticketId, kind, createdAt])
 }

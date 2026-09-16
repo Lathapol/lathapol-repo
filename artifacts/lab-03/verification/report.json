@@ -1,0 +1,49 @@
+{
+  "testedCommit": "23ee5d2e60824cf735bc333dbcf1068d356c6895",
+  "startedAt": "2026-09-15T10:08:57.909Z",
+  "steps": [
+    {
+      "name": "server-tests",
+      "directory": "server",
+      "command": "node node_modules/jest/bin/jest.js --runInBand --testTimeout=15000",
+      "exitCode": 0,
+      "log": "artifacts/lab-03/verification/server-tests.log"
+    },
+    {
+      "name": "server-build",
+      "directory": "server",
+      "command": "node node_modules/typescript/bin/tsc",
+      "exitCode": 0,
+      "log": "artifacts/lab-03/verification/server-build.log"
+    },
+    {
+      "name": "client-tests",
+      "directory": "client",
+      "command": "node node_modules/vitest/vitest.mjs run",
+      "exitCode": 0,
+      "log": "artifacts/lab-03/verification/client-tests.log"
+    },
+    {
+      "name": "client-types",
+      "directory": "client",
+      "command": "node node_modules/typescript/bin/tsc -b",
+      "exitCode": 0,
+      "log": "artifacts/lab-03/verification/client-types.log"
+    },
+    {
+      "name": "client-build",
+      "directory": "client",
+      "command": "node node_modules/vite/bin/vite.js build",
+      "exitCode": 0,
+      "log": "artifacts/lab-03/verification/client-build.log"
+    },
+    {
+      "name": "browser-tests",
+      "directory": ".",
+      "command": "node node_modules/@playwright/test/cli.js test --config playwright.lab3.config.ts",
+      "exitCode": 0,
+      "log": "artifacts/lab-03/verification/browser-tests.log"
+    }
+  ],
+  "finishedAt": "2026-09-15T10:11:42.135Z"
+}

@@ -182,3 +182,70 @@
     border-right-color: var(--border);
   }
 }
+
+.auth-page {min-height:100vh;display:grid;place-items:center;padding:24px;background:#F5F7F6;}
+:root{color-scheme:light;font-size:16px;color:#1F2A24;background:#F5F7F6;--bg:#F5F7F6;--text:#1F2A24;--text-h:#1F2A24;--accent:#006B3C}
+.btn-success{--bs-btn-bg:#006B3C;--bs-btn-border-color:#006B3C;--bs-btn-hover-bg:#0B7A46;--bs-btn-hover-border-color:#0B7A46}
+.auth-card{width:100%;max-width:480px;border:1px solid #dce7df;border-radius:16px;box-shadow:0 12px 40px #006b3c0d;}
+.navbar .container{gap:16px;flex-wrap:wrap;}
+.list-group-item{gap:16px;flex-wrap:wrap;overflow-wrap:anywhere;}
+.form-control:focus,.form-select:focus{border-color:#006B3C;box-shadow:0 0 0 3px #006b3c33;}
+@media(max-width:767px){.btn{min-height:44px}.navbar .ms-auto{margin-left:0!important;flex-wrap:wrap}.auth-page{padding:16px}}
+
+.queue-page { max-width: 1200px; text-align: left; }
+.queue-nav { background: #006B3C; color: white; }
+.queue-nav .container { gap: 16px; flex-wrap: wrap; }
+.queue-filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.queue-field { display: flex; flex-direction: column; gap: 8px; }
+.queue-search { grid-column: span 2; }
+.queue-actions { display: flex; gap: 8px; align-items: end; grid-column: span 2; }
+.queue-page button, .queue-nav button { min-height: 44px; }
+.queue-table { table-layout: fixed; margin-top: 16px; }
+.queue-table th:first-child { width: 26%; }
+.queue-table th:last-child { width: 9%; }
+.queue-table td { overflow-wrap: anywhere; vertical-align: middle; }
+.queue-badge { display: inline-block; background: #EAF6EF; color: #006B3C; padding: 4px 8px; border-radius: 6px; font-size: .85rem; margin-bottom: 4px; }
+.queue-cards { display: none; }
+.queue-pagination { display: flex; gap: 16px; align-items: center; justify-content: center; margin-top: 24px; }
+@media (max-width: 991px) {
+  .queue-table { display: none; }
+  .queue-cards { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 16px; }
+  .queue-cards article { overflow-wrap: anywhere; }
+  .queue-filters { grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width: 575px) {
+  .queue-cards { grid-template-columns: 1fr; }
+  .queue-filters { grid-template-columns: 1fr; }
+  .queue-search, .queue-actions { grid-column: auto; }
+  .queue-pagination { gap: 8px; }
+}
+
+.ticket-activity { text-align: left; }
+.workflow-fields { display: grid; gap: 16px; grid-template-columns: repeat(3,minmax(0,1fr)); }
+.workflow-fields label { display: flex; flex-direction: column; gap: 8px; }
+.workflow-fields .workflow-confirm { flex-direction: row; align-items: center; grid-column: 1/-1; }
+.workflow-buttons { display: flex; flex-wrap: wrap; gap: 8px; grid-column: 1/-1; }
+.ticket-activity button { min-height: 44px; }
+.entry-list { list-style: none; padding: 0; }
+.entry-list li { border-top: 1px solid #d5dfd8; padding: 16px 0; }
+.entry-body { white-space: pre-wrap; overflow-wrap: anywhere; margin-top: 8px; }
+.internal-notes { border: 2px solid #69796c; background: #f2f5f3; }
+@media(max-width:767px) { .workflow-fields { grid-template-columns: 1fr; } }
+
+.users-page { max-width: 1200px; text-align: left; }
+.user-filters { display: grid; grid-template-columns: 2fr 1fr auto; gap: 16px; align-items: end; }
+.user-form { display: grid; gap: 16px; }
+.user-form label, .user-filters label { display: flex; flex-direction: column; gap: 8px; }
+.user-form .user-check { flex-direction: row; align-items: center; }
+.user-editor { max-width: 720px; }
+.user-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.users-page button { min-height: 44px; }
+.users-table { table-layout: fixed; }
+.users-table td { overflow-wrap: anywhere; vertical-align: middle; }
+.user-cards { display: none; }
+@media(max-width:991px) { .users-table { display: none; } .user-cards { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap:16px; } .user-cards article { overflow-wrap: anywhere; } .user-filters { grid-template-columns: 1fr 1fr; } }
+@media(max-width:767px) { .user-cards, .user-filters { grid-template-columns: 1fr; } }
+
+button:focus-visible, a:focus-visible { outline: 3px solid #006B3C; outline-offset: 3px; }
+.queue-nav button:focus-visible { outline-color: white; }
+.queue-nav button[aria-current="page"] { background: #EAF6EF; color: #006B3C; }

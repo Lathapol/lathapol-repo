@@ -19,7 +19,7 @@ A full-stack IT service desk ticketing application, built incrementally across C
 ### 1. Clone the repo
 ```bash
 git clone https://github.com/Lathapol/lathapol-repo.git
-cd toktickit
+cd lathapol-repo
 ```
 
 ### 2. Set up the database
@@ -32,8 +32,10 @@ npm install
 cp .env.example .env
 # edit .env with your DATABASE_URL
 npx prisma generate
-npx prisma migrate dev
-npx prisma db seed
+# Back up existing data before applying migrations.
+npx prisma migrate deploy
+# Set LAB3_INITIAL_PASSWORD privately in your shell (12-128 characters).
+npm run seed
 npm run dev
 ```
 Server runs on http://localhost:4000
@@ -53,7 +55,7 @@ Frontend runs on http://localhost:5173
 - Category list from PostgreSQL
 
 ### Lab 2 — Requester Ticketing MVP
-- Development Requester Selection (temporary testing identity, not real auth)
+- Original development selector (replaced by authenticated accounts in Lab 3)
 - Create Ticket with validation and attachment upload
 - My Tickets: search, filter, sort, pagination
 - Ticket Detail: read-only ticket info, attachment download and soft-removal
@@ -63,7 +65,7 @@ Frontend runs on http://localhost:5173
 ### Backend (Jest + Supertest)
 ```bash
 cd server
-npm test
+npm test -- --runInBand --testTimeout=15000
 ```
 
 ### Frontend (Vitest)
@@ -75,7 +77,27 @@ npm test
 ### End-to-End (Playwright)
 Make sure both the backend and frontend dev servers are running, then from the repo root:
 ```bash
-npx playwright test
+npx playwright test --config playwright.lab3.config.ts
 ```
 
 ## Project Structure
+
+```text
+client/src/          React screens and authenticated API client
+client/tests/        Component regression and Lab 3 tests
+server/src/          Express, auth, requester/staff/admin APIs
+server/prisma/       Additive migrations and repeatable seed
+server/tests/        Unit, API, authorization and regression tests
+e2e/lab-03/          Browser scenarios at three viewports
+docs/lab-03/         Specifications, test traceability, reviews, AI-use record
+artifacts/lab-03/    Versioned screenshots and verification outputs
+scripts/            Reproducible integrated/migration checks
+```
+
+
+
+## Lab 3 — Authenticated support workflow
+
+Lab 3 adds cookie sessions and required initial-password replacement, the requester workflow, staff ticket queue/assignment/status/comments/private notes, requester apparent resolution, and administrator account management. Administrators can read tickets but cannot perform staff mutations.
+
+See [local account setup](docs/lab-03/issue-02.md), [API contract](docs/lab-03/api-spec.md), and [integrated verification instructions/results](docs/lab-03/tests.md). Use a separate `toktickit_lab3_test` database for tests. `node scripts/verify-lab3.cjs` runs backend/client tests, builds and the desktop/tablet/mobile browser suite against the local test services. This feature branch still requires peer review and final-main verification.

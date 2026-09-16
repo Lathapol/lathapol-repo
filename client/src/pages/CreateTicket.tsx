@@ -4,6 +4,7 @@ import {
   fetchCategories,
   fetchRelatedSystems,
   createTicket,
+  uploadAttachment,
 } from '../api'
 import type { Category, RelatedSystem } from '../api'
 import AttachmentPicker from '../components/AttachmentPicker'
@@ -19,7 +20,7 @@ interface FieldErrors {
   relatedSystemId?: string
 }
 
-export default function CreateTicket() {
+export default function CreateTicket({onOpenTicket}:{onOpenTicket?:(id:number)=>void}) {
   const { requester } = useRequester()
 
   const [loadState, setLoadState] = useState<LoadState>('loading')
@@ -37,6 +38,8 @@ export default function CreateTicket() {
   const [submitState, setSubmitState] = useState<SubmitState>('idle')
   const [submitError, setSubmitError] = useState('')
   const [ticketNumber, setTicketNumber] = useState('')
+  const [createdId,setCreatedId]=useState<number|null>(null)
+  const [attachmentWarning,setAttachmentWarning]=useState('')
 
   useEffect(() => {
     Promise.all([fetchCategories(), fetchRelatedSystems()])
@@ -94,6 +97,10 @@ export default function CreateTicket() {
         requestedPriority,
       })
       setTicketNumber(ticket.ticketNumber)
+      setCreatedId(ticket.id)
+      const failed:string[]=[]
+      for(const item of attachments){try{await uploadAttachment(ticket.id,requester.id,item.file)}catch{failed.push(item.file.name)}}
+      if(failed.length)setAttachmentWarning(`Ticket created, but these attachments failed: ${failed.join(', ')}. Open the ticket to retry uploading them.`)
       setSubmitState('success')
     } catch (err: any) {
       setSubmitError(err.message ?? 'Unable to create ticket. Please try again.')
@@ -120,6 +127,8 @@ export default function CreateTicket() {
           <h4>Ticket Created</h4>
           <p className="mb-1">Your official Ticket Number is:</p>
           <p className="fw-bold fs-5">{ticketNumber}</p>
+          {attachmentWarning&&<p role="alert" className="alert alert-warning">{attachmentWarning}</p>}
+          {createdId&&onOpenTicket&&<button className="btn btn-success" onClick={()=>onOpenTicket(createdId)}>Open ticket</button>}
         </div>
       </div>
     )

@@ -1,6 +1,9 @@
+import Users from './pages/Users'
+import TicketQueue from './pages/TicketQueue'
 ﻿import { useState } from "react"
-import { useRequester } from "./context/RequesterContext"
-import RequesterSelection from "./pages/RequesterSelection"
+import { RequesterProvider, useRequester } from "./context/RequesterContext"
+import Login from "./pages/Login"
+import { useAuth } from "./context/AuthContext"
 import CreateTicket from "./pages/CreateTicket"
 import MyTickets from "./pages/MyTickets"
 import TicketDetail from "./pages/TicketDetail"
@@ -8,12 +11,14 @@ import "./App.css"
 
 type Page = { type: "myTickets" } | { type: "createTicket" } | { type: "ticketDetail"; id: number }
 
-function App() {
-  const { requester, setRequester } = useRequester()
+function RequesterApp() {
+  const {logout}=useAuth()
+  const [logoutError,setLogoutError]=useState(""),[loggingOut,setLoggingOut]=useState(false)
+  const { requester } = useRequester()
   const [page, setPage] = useState<Page>({ type: "myTickets" })
 
   if (!requester) {
-    return <RequesterSelection onContinue={() => {}} />
+    return null
   }
 
   return (
@@ -37,25 +42,27 @@ function App() {
           </div>
           <div className="ms-auto text-white d-flex align-items-center gap-3">
             <span>
-              Logged in as: <strong>{requester.name}</strong>
+              Requester: <strong>{requester.name}</strong>
             </span>
             <button
               className="btn btn-sm btn-outline-light"
-              onClick={() => setRequester(null)}
+              disabled={loggingOut}
+              onClick={async () => {setLoggingOut(true);try{await logout()}catch{setLogoutError("Unable to sign out. Please retry.")}finally{setLoggingOut(false)}}}
             >
-              Change Requester
+              Sign out
             </button>
           </div>
         </div>
       </nav>
 
+      {logoutError && <div role="alert" className="alert alert-danger">{logoutError}</div>}
       {page.type === "myTickets" && (
         <MyTickets
           onCreateTicket={() => setPage({ type: "createTicket" })}
           onOpenTicket={(id) => setPage({ type: "ticketDetail", id })}
         />
       )}
-      {page.type === "createTicket" && <CreateTicket />}
+      {page.type === "createTicket" && <CreateTicket onOpenTicket={id=>setPage({type:'ticketDetail',id})}/>}
       {page.type === "ticketDetail" && (
         <TicketDetail ticketId={page.id} onBack={() => setPage({ type: "myTickets" })} />
       )}
@@ -63,4 +70,25 @@ function App() {
   )
 }
 
+function RoleHome(){
+  const {user,logout,refresh}=useAuth()
+  const [error,setError]=useState('')
+  const [ticketId,setTicketId]=useState<number|null>(null)
+  const [view,setView]=useState<'users'|'queue'>(user?.role==='ADMINISTRATOR'?'users':'queue')
+  const [busy,setBusy]=useState(false)
+  if(!user)return null
+  return <RequesterProvider key={user.id} initialRequester={user}>
+    <nav className="navbar queue-nav"><div className="container"><strong>TokTickIT</strong>{user.role==='ADMINISTRATOR'&&<div className="d-flex gap-2"><button className="btn btn-outline-light" aria-current={view==='users'?'page':undefined} onClick={()=>setView('users')}>Users</button><button className="btn btn-outline-light" aria-current={view==='queue'?'page':undefined} onClick={()=>{setView('queue');setTicketId(null)}}>Ticket Queue</button></div>}<span>{user.name} · {user.role==='IT_STAFF'?'IT Staff':'Administrator'}</span><button className="btn btn-outline-light" disabled={busy} onClick={async()=>{setBusy(true);try{await logout()}catch{setError('Unable to sign out. Please retry.')}finally{setBusy(false)}}}>Sign out</button></div></nav>
+    {error&&<p role="alert">{error}</p>}
+    {view==='users'&&user.role==='ADMINISTRATOR'?<Users currentUserId={user.id} onSelfChange={refresh}/>:ticketId===null?<TicketQueue onOpenTicket={setTicketId}/>:<TicketDetail ticketId={ticketId} viewerRole={user.role} readOnly onBack={()=>setTicketId(null)}/>}
+  </RequesterProvider>
+}
+function App(){
+  const {user,loading,error,refresh}=useAuth()
+  if(loading)return <main className="container py-5" role="status">Checking your session…</main>
+  if(error)return <main className="container py-5"><p role="alert">{error}</p><button className="btn btn-success" onClick={()=>void refresh()}>Retry</button></main>
+  if(!user||user.mustChangePassword)return <Login key={user?.id??'login'}/>
+  if(user.role!=='REQUESTER')return <RoleHome/>
+  return <RequesterProvider key={user.id} initialRequester={user}><RequesterApp/></RequesterProvider>
+}
 export default App
