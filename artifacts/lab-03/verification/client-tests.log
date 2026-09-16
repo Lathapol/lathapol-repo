@@ -4,6 +4,6 @@
 
  Test Files  7 passed (7)
       Tests  26 passed (26)
-   Start at  17:09:49
-   Duration  31.59s (transform 2.65s, setup 31.37s, import 6.09s, tests 5.37s, environment 166.58s)
+   Start at  17:19:27
+   Duration  28.56s (transform 2.31s, setup 28.11s, import 6.86s, tests 6.20s, environment 150.47s)
 
