@@ -249,3 +249,17 @@
 button:focus-visible, a:focus-visible { outline: 3px solid #006B3C; outline-offset: 3px; }
 .queue-nav button:focus-visible { outline-color: white; }
 .queue-nav button[aria-current="page"] { background: #EAF6EF; color: #006B3C; }
+
+.actions-taken .actions-table { margin-bottom: 0; }
+.actions-taken .entry-body { white-space: pre-wrap; overflow-wrap: anywhere; }
+.action-form { border: 1px solid #d5dfd8; border-radius: 8px; padding: 16px; margin: 16px 0; background: #fff; }
+.action-fields { display: grid; gap: 8px; min-width: 0; }
+.action-fields .action-check { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.readonly-field { background: #EDF1EE; border-radius: 4px; padding: 8px; }
+@media(max-width:991px) {
+  .actions-table thead { position: absolute; left: -9999px; }
+  .actions-table tr { display: block; border-top: 1px solid #d5dfd8; padding: 8px 0; }
+  .actions-table td { display: block; border: 0; padding: 4px 0; }
+  .actions-table td[data-label]::before { content: attr(data-label); display: block; font-weight: 600; font-size: .85rem; color: #4a5a4f; }
+}
+@media(max-width:767px) { .action-form .btn, .actions-table .btn { min-height: 44px; } }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { appearsResolved, fetchEntries, fetchOwners, postEntry, updateWorkflow } from '../api'
 import type { TicketDetail, TicketEntry, QueueOwner } from '../api'
+import ActionsTaken from './ActionsTaken'
 
 const transitions: Record<string,string[]> = {
   NEW:['OPEN','CANCELLED'], OPEN:['IN_PROGRESS','WAITING_FOR_REQUESTER','RESOLVED','CANCELLED'],
@@ -79,6 +80,7 @@ export default function TicketActivity({ticket,role,onRefresh}:{ticket:TicketDet
       </>}
       {role==='REQUESTER'&&!ticket.requesterResolvedAt&&!['CLOSED','CANCELLED'].includes(ticket.currentStatus)&&<><p>Tell support if the problem appears fixed. This does not resolve or close your ticket.</p><button className="btn btn-outline-success" disabled={busy} onClick={()=>void action(false,true)}>{busy?'Saving…':'This appears resolved'}</button></>}
     </section>
+    <ActionsTaken ticketId={ticket.id} role={role} ticketStatus={ticket.currentStatus}/>
     <Conversation ticketId={ticket.id} kind="comments" canWrite={role!=='ADMINISTRATOR'}/>
     {role!=='REQUESTER'&&<Conversation ticketId={ticket.id} kind="notes" canWrite={role==='IT_STAFF'}/>}
   </div>

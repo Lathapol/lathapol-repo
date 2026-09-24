@@ -273,6 +273,23 @@ export async function appearsResolved(id: number) {
   return (await apiFetch(`${API_URL}/api/tickets/${id}/appears-resolved`, {method:'POST'})).json()
 }
 
+export interface ActionTaken {
+  id: number; ticketId: number; description: string; result: string
+  followUpRequired: boolean; followUpNote: string | null; attachmentNotes: string | null
+  version: number; createdAt: string; updatedAt: string; performedBy: { id: number; name: string }
+}
+export interface ActionInput { description: string; result: string; followUpRequired: boolean; followUpNote: string | null; attachmentNotes: string | null }
+export async function fetchActions(ticketId: number): Promise<ActionTaken[]> {
+  return (await apiFetch(`${API_URL}/api/tickets/${ticketId}/actions`)).json()
+}
+// requestKey lets the server treat a retry of the same submission as one action.
+export async function createAction(ticketId: number, requestKey: string, data: ActionInput): Promise<ActionTaken> {
+  return (await apiFetch(`${API_URL}/api/tickets/${ticketId}/actions`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requestKey,...data})})).json()
+}
+export async function updateAction(id: number, version: number, data: ActionInput): Promise<ActionTaken> {
+  return (await apiFetch(`${API_URL}/api/actions/${id}`, {method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({version,...data})})).json()
+}
+
 export interface ManagedUser { id: number; name: string; email: string; role: 'REQUESTER'|'IT_STAFF'|'ADMINISTRATOR'; isActive: boolean; mustChangePassword: boolean }
 export type UserFields = Pick<ManagedUser,'name'|'email'|'role'|'isActive'>
 export async function fetchUsers(search = '', role = ''): Promise<ManagedUser[]> {

@@ -1,0 +1,2 @@
+import {defineConfig} from '@playwright/test';
+export default defineConfig({testDir:'./e2e/lab-04',timeout:90000,workers:1,reporter:'list',use:{baseURL:'http://localhost:5183',channel:'msedge',screenshot:'only-on-failure'},projects:[{name:'desktop',use:{viewport:{width:1440,height:1000}}},{name:'mobile',use:{viewport:{width:390,height:844}}},{name:'tablet',use:{viewport:{width:820,height:1180}}}]});
