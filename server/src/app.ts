@@ -1,6 +1,7 @@
 ﻿import { usersRouter } from './users';
 import { workflowRouter } from './workflow';
 import { staffRouter } from './staff';
+import { actionsRouter } from './actions';
 import express from "express";
 import cors from "cors";
 import fs from "fs";
@@ -27,6 +28,7 @@ app.use('/api/auth', authRouter);
 app.use('/api', authenticate, completedPassword, csrf);
 app.use('/api/staff', staffRouter);
 app.use('/api', workflowRouter);
+app.use('/api', actionsRouter);
 app.use('/api/users', usersRouter);
 app.param('id',(req,res,next,value)=>{if(!/^[1-9]\d*$/.test(value)||!Number.isSafeInteger(Number(value)))return res.status(400).json({error:{code:'INVALID_ID',message:'Invalid resource ID.'}});next();});
 

@@ -11,7 +11,7 @@ const login=(secret=password) => request(app).post('/api/auth/login').send({emai
 const cookie=(response:any):string => response.headers['set-cookie'][0].split(';')[0];
 
 beforeAll(async()=>{
-  if (!process.env.DATABASE_URL?.includes('toktickit_lab3_test')) throw new Error('Use the isolated toktickit_lab3_test database.');
+  if (!process.env.DATABASE_URL?.includes('toktickit_lab4_test')) throw new Error('Use the isolated toktickit_lab4_test database.');
   id=(await prisma.user.create({data:{name:'Auth test',email,passwordHash:await hashPassword(password)}})).id;
 });
 afterAll(async()=>{if(id) await prisma.user.delete({where:{id}}); await prisma.$disconnect();});
