@@ -6,10 +6,10 @@ const {scryptSync,randomBytes}=localRequire('node:crypto');
 const {readFileSync}=localRequire('node:fs');
 const config=localRequire('../../server/node_modules/dotenv').parse(readFileSync('server/.env'));
 test('admin creates, edits, deactivates and resets an account; user must change password',async({page},info)=>{
-  if(new URL(config.DATABASE_URL).pathname!=='/toktickit_lab3_test')throw new Error('Isolated test database required');
+  if(new URL(process.env.DATABASE_URL||config.DATABASE_URL).pathname!=='/toktickit_lab4_test')throw new Error('Isolated test database required');
   const suffix=Date.now(),email=`admin-ui-${suffix}@example.test`,createdEmail=`created-ui-${suffix}@example.test`,password='Local admin password 123!',initial='Local initial password 456!',reset='Local reset password 789!';
   const salt=randomBytes(16).toString('hex'),hash=`scrypt$${salt}$${scryptSync(password,salt,64,{N:32768,r:8,p:3,maxmem:64*1024*1024}).toString('hex')}`;
-  const db=new Client({connectionString:config.DATABASE_URL});await db.connect();
+  const db=new Client({connectionString:process.env.DATABASE_URL||config.DATABASE_URL});await db.connect();
   await db.query('INSERT INTO "RequesterUser" (name,email,role,"passwordHash","mustChangePassword","updatedAt") VALUES ($1,$2,\'ADMINISTRATOR\',$3,false,NOW())',['Account Administrator',email,hash]);
   const edit=()=>page.getByRole('button',{name:`Edit ${createdEmail}`,exact:true}).filter({visible:true}).first().click();
   try{

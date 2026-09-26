@@ -10,7 +10,7 @@ workflowRouter.param('id', (_req, res, next, id) => {
   next();
 });
 const object = (value: unknown): value is Record<string, any> => !!value && typeof value === 'object' && !Array.isArray(value);
-const conflict = (message: string) => Object.assign(new Error(message), { workflowConflict: true });
+const conflict = (message: string, code = 'TICKET_CONFLICT') => Object.assign(new Error(message), { workflowConflict: true, code });
 const operational = { id:true, ownerId:true, itPriority:true, currentStatus:true, version:true, requesterResolvedAt:true } as const;
 
 async function updateTicket(id: number, input: Record<string, any>, actorId: number, claim: boolean) {
@@ -29,6 +29,8 @@ async function updateTicket(id: number, input: Record<string, any>, actorId: num
     if (input.currentStatus !== undefined) {
       if (!transitions[ticket.currentStatus].includes(input.currentStatus)) throw conflict('This status transition is not allowed.');
       if (['RESOLVED','CLOSED','CANCELLED'].includes(input.currentStatus) && input.confirmed !== true) throw conflict('Confirm this status change before saving.');
+      // Resolution gate (Lab 4 BR-10): checked under the same ticket row lock, so a concurrent action insert cannot slip past it.
+      if (input.currentStatus === 'RESOLVED' && await tx.actionTaken.count({where:{ticketId:id}}) === 0) throw conflict('Add at least one action taken before resolving this ticket.','ACTION_REQUIRED');
     }
     const data: Prisma.TicketUncheckedUpdateInput = {version:{increment:1}};
     if (ownerId !== undefined) data.ownerId = ownerId;
@@ -54,7 +56,7 @@ for (const claim of [false,true]) {
       if (!ticket) return fail(res,404,'TICKET_NOT_FOUND','Ticket not found.');
       res.json(ticket);
     } catch (error: any) {
-      if (error.workflowConflict) return fail(res,409,'TICKET_CONFLICT',error.message);
+      if (error.workflowConflict) return fail(res,409,error.code,error.message);
       throw error;
     }
   });

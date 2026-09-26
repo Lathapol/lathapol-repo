@@ -8,11 +8,11 @@ const config=localRequire('../../server/node_modules/dotenv').parse(readFileSync
 const initial='Local test initial 123!',changed='Local test changed 456!';
 let email:string;
 test.beforeEach(async()=>{
-  if(new URL(config.DATABASE_URL).pathname!=='/toktickit_lab3_test')throw new Error('Isolated test database required');
+  if(new URL(process.env.DATABASE_URL||config.DATABASE_URL).pathname!=='/toktickit_lab4_test')throw new Error('Isolated test database required');
   email=`e2e-${Date.now()}@example.com`;
   const salt=randomBytes(16).toString('hex');
   const hash=`scrypt$${salt}$${scryptSync(initial,salt,64,{N:32768,r:8,p:3,maxmem:64*1024*1024}).toString('hex')}`;
-  const db=new Client({connectionString:config.DATABASE_URL});await db.connect();
+  const db=new Client({connectionString:process.env.DATABASE_URL||config.DATABASE_URL});await db.connect();
   await db.query('INSERT INTO "RequesterUser" (name,email,"passwordHash","updatedAt") VALUES ($1,$2,$3,NOW())',['Browser Test',email,hash]);await db.end();
 });
 test('login, first change, create with attachment, filter, reload, remove and logout',async({page},info)=>{
