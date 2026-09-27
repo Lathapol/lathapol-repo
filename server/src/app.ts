@@ -2,6 +2,8 @@
 import { workflowRouter } from './workflow';
 import { staffRouter } from './staff';
 import { actionsRouter } from './actions';
+import { dashboardRouter } from './dashboard';
+import { groupStatuses, recentSince } from './dashboardGroups';
 import express from "express";
 import cors from "cors";
 import fs from "fs";
@@ -29,6 +31,7 @@ app.use('/api', authenticate, completedPassword, csrf);
 app.use('/api/staff', staffRouter);
 app.use('/api', workflowRouter);
 app.use('/api', actionsRouter);
+app.use('/api/dashboard', dashboardRouter);
 app.use('/api/users', usersRouter);
 app.param('id',(req,res,next,value)=>{if(!/^[1-9]\d*$/.test(value)||!Number.isSafeInteger(Number(value)))return res.status(400).json({error:{code:'INVALID_ID',message:'Invalid resource ID.'}});next();});
 
@@ -124,7 +127,7 @@ app.get("/api/tickets", permit("REQUESTER"), async (req, res) => {
     }
 
     const q=req.query;
-    if(Object.keys(q).some(k=>!['requesterId','search','category','priority','status','sort','order','page','pageSize'].includes(k)))return res.status(400).json({error:{code:'INVALID_QUERY',message:'Unknown ticket filter.'}});
+    if(Object.keys(q).some(k=>!['requesterId','search','category','priority','status','sort','order','page','pageSize','group','recent'].includes(k)))return res.status(400).json({error:{code:'INVALID_QUERY',message:'Unknown ticket filter.'}});
     const positive=(v:unknown)=>typeof v==='string' && /^[1-9]\d*$/.test(v) && Number.isSafeInteger(Number(v));
     if ((q.search!==undefined && (typeof q.search!=='string'||q.search.length>200)) ||
       ['category','page','pageSize'].some(k=>q[k]!==undefined&&!positive(q[k])) ||
@@ -132,7 +135,9 @@ app.get("/api/tickets", permit("REQUESTER"), async (req, res) => {
       (q.priority!==undefined&&!['LOW','MEDIUM','HIGH'].includes(q.priority as string)) ||
       (q.status!==undefined&&!['NEW','OPEN','IN_PROGRESS','WAITING_FOR_REQUESTER','RESOLVED','CLOSED','REOPENED','CANCELLED'].includes(q.status as string)) ||
       (q.sort!==undefined&&!['createdAt','updatedAt','ticketNumber'].includes(q.sort as string)) ||
-      (q.order!==undefined&&!['asc','desc'].includes(q.order as string))) return res.status(400).json({error:{code:'INVALID_QUERY',message:'Invalid ticket filter or pagination.'}});
+      (q.order!==undefined&&!['asc','desc'].includes(q.order as string)) ||
+      (q.group!==undefined&&!['open','resolved'].includes(q.group as string)) ||
+      (q.recent!==undefined&&q.recent!=='7d')) return res.status(400).json({error:{code:'INVALID_QUERY',message:'Invalid ticket filter or pagination.'}});
     const search = (req.query.search as string) || "";
     const categoryId = req.query.category ? Number(req.query.category) : undefined;
     const requestedPriority = req.query.priority as string | undefined;
@@ -156,7 +161,13 @@ app.get("/api/tickets", permit("REQUESTER"), async (req, res) => {
     }
     if (categoryId) where.categoryId = categoryId;
     if (requestedPriority) where.requestedPriority = requestedPriority;
-    if (currentStatus) where.currentStatus = currentStatus;
+    // status and group intersect (api-spec.md "Drill-down parameters"): group narrows the set, status must also be in it.
+    const groupList = groupStatuses(q.group);
+    if (currentStatus && groupList) { if (!groupList.includes(currentStatus)) where.id = -1; else where.currentStatus = currentStatus; }
+    else if (currentStatus) where.currentStatus = currentStatus;
+    else if (groupList) where.currentStatus = { in: groupList };
+    const since = recentSince(q.recent);
+    if (since) where.updatedAt = { gte: since };
 
     const totalCount = await prisma.ticket.count({ where });
     const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));

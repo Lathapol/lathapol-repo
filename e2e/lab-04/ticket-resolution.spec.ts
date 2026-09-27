@@ -15,7 +15,8 @@ test('E2E-02 resolution gate: cannot resolve without an action, resolves after o
   const suffix=Date.now(),summary=`Resolution browser ${suffix}`,signalSummary=`Signal browser ${suffix}`,names=['Gate Support','Gate Requester'];
   async function login(index:number){
     await page.goto('/');await page.getByLabel('Email',{exact:true}).fill(users[index].email);await page.getByLabel('Password',{exact:true}).fill(password);await page.getByRole('button',{name:'Sign in',exact:true}).click();
-    await expect(page.getByRole('heading',{name:index===1?'My Tickets':'Ticket Queue',exact:true})).toBeVisible();
+    await expect(page.getByRole('heading',{name:index===1?'My Dashboard':'IT Staff Dashboard',exact:true})).toBeVisible();
+    await page.getByRole('button',{name:index===1?'My Tickets':'Ticket Queue',exact:true}).click();
   }
   async function logout(){await page.getByRole('button',{name:'Sign out',exact:true}).click();await expect(page.getByRole('button',{name:'Sign in',exact:true})).toBeVisible()}
   async function openStaff(text:string){await page.getByLabel('Search',{exact:true}).fill(text);await page.getByRole('button',{name:'Apply filters'}).click();await page.getByRole('button',{name:/^Open /}).filter({visible:true}).first().click();await expect(page.getByRole('heading',{name:'Ticket workflow',exact:true})).toBeVisible()}

@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { prisma } from './prisma';
 import { permit } from './auth';
 import { Prisma, Priority, TicketStatus } from './generated/prisma/client';
+import { groupStatuses, recentSince } from './dashboardGroups';
 
 export const staffRouter = Router();
 staffRouter.use(permit('IT_STAFF', 'ADMINISTRATOR'));
@@ -19,13 +20,14 @@ staffRouter.get('/tickets', async (req, res) => {
   const q = req.query;
   const positive = (v: unknown) => typeof v === 'string' && /^[1-9]\d*$/.test(v) && Number.isSafeInteger(Number(v));
   const oneOf = (v: unknown, values: string[]) => v === undefined || (typeof v === 'string' && values.includes(v));
-  if (Object.keys(q).some(k => !['search','category','priority','status','owner','sort','order','page','pageSize'].includes(k)) ||
+  if (Object.keys(q).some(k => !['search','category','priority','status','owner','sort','order','page','pageSize','group','recent'].includes(k)) ||
     (q.search !== undefined && (typeof q.search !== 'string' || q.search.length > 200)) ||
     ['category','page','pageSize'].some(k => q[k] !== undefined && !positive(q[k])) ||
     Number(q.pageSize) > 50 || !oneOf(q.priority, Object.values(Priority)) ||
     !oneOf(q.status, Object.values(TicketStatus)) ||
     !oneOf(q.sort, ['createdAt','updatedAt','ticketNumber','itPriority']) ||
     !oneOf(q.order, ['asc','desc']) ||
+    !oneOf(q.group, ['open','resolved']) || !oneOf(q.recent, ['7d']) ||
     (!oneOf(q.owner, ['all','mine','unassigned']) && !positive(q.owner))) {
     return res.status(400).json({ error: { code: 'INVALID_QUERY', message: 'Invalid queue filter or pagination.' } });
   }
@@ -33,7 +35,13 @@ staffRouter.get('/tickets', async (req, res) => {
   if (q.search) where.OR = [{ ticketNumber: { contains: q.search as string, mode: 'insensitive' } }, { summary: { contains: q.search as string, mode: 'insensitive' } }];
   if (q.category) where.categoryId = Number(q.category);
   if (q.priority) where.itPriority = q.priority as Priority;
-  if (q.status) where.currentStatus = q.status as TicketStatus;
+  // status and group intersect (api-spec.md "Drill-down parameters").
+  const groupList = groupStatuses(q.group);
+  if (q.status && groupList) where.currentStatus = groupList.includes(q.status as string) ? (q.status as TicketStatus) : { in: [] };
+  else if (q.status) where.currentStatus = q.status as TicketStatus;
+  else if (groupList) where.currentStatus = { in: groupList as unknown as TicketStatus[] };
+  const since = recentSince(q.recent);
+  if (since) where.updatedAt = { gte: since };
   if (q.owner === 'mine') where.ownerId = res.locals.user.id;
   else if (q.owner === 'unassigned') where.ownerId = null;
   else if (positive(q.owner)) where.ownerId = Number(q.owner);
