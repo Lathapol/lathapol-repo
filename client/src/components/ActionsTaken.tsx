@@ -21,7 +21,7 @@ export function validateAction(draft: Draft): Errors {
 const newKey = () => globalThis.crypto?.randomUUID?.() ?? 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g, () => Math.floor(Math.random() * 16).toString(16))
 const toDraft = (a: ActionTaken): Draft => ({ description: a.description, result: a.result, followUpRequired: a.followUpRequired, followUpNote: a.followUpNote ?? '', attachmentNotes: a.attachmentNotes ?? '' })
 
-export default function ActionsTaken({ ticketId, role, ticketStatus }: { ticketId: number; role: Role; ticketStatus: string }) {
+export default function ActionsTaken({ ticketId, role, ticketStatus, onCountChange }: { ticketId: number; role: Role; ticketStatus: string; onCountChange?: (count: number | null) => void }) {
   const [actions, setActions] = useState<ActionTaken[]>([])
   const [loading, setLoading] = useState(true), [loadError, setLoadError] = useState(false), [reload, setReload] = useState(0)
   const [mode, setMode] = useState<Mode>(null), [draft, setDraft] = useState<Draft>(blank), [errors, setErrors] = useState<Errors>({})
@@ -36,6 +36,9 @@ export default function ActionsTaken({ ticketId, role, ticketStatus }: { ticketI
     fetchActions(ticketId).then(result => { if (current) setActions(result) }).catch(() => { if (current) setLoadError(true) }).finally(() => { if (current) setLoading(false) })
     return () => { current = false }
   }, [ticketId, reload])
+
+  // Lets the workflow card know whether the resolution gate can pass; null while unknown or failed.
+  useEffect(() => { onCountChange?.(loading || loadError ? null : actions.length) }, [actions.length, loading, loadError, onCountChange])
 
   function open(next: Mode, initial: Draft) {
     setMode(next); setDraft(initial); setErrors({}); setFormError(''); setSuccess('')

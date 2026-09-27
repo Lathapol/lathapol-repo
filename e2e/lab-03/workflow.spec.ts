@@ -8,8 +8,8 @@ const config=localRequire('../../server/node_modules/dotenv').parse(readFileSync
 const password='Local workflow password 123!';
 
 test('staff workflow, private notes, requester signal and admin read-only view',async({page},info)=>{
-  if(new URL(config.DATABASE_URL).pathname!=='/toktickit_lab3_test')throw new Error('Isolated test database required');
-  const db=new Client({connectionString:config.DATABASE_URL});await db.connect();
+  if(new URL(process.env.DATABASE_URL||config.DATABASE_URL).pathname!=='/toktickit_lab4_test')throw new Error('Isolated test database required');
+  const db=new Client({connectionString:process.env.DATABASE_URL||config.DATABASE_URL});await db.connect();
   const users:{id:number;email:string}[]=[];let ticketId:number|undefined;
   const suffix=Date.now(),summary=`Workflow browser ${suffix}`;
   async function login(index:number){
@@ -38,11 +38,14 @@ test('staff workflow, private notes, requester signal and admin read-only view',
     await page.getByRole('button',{name:'This appears resolved'}).click();await expect(page.getByText(/Requester reported apparent resolution/)).toBeVisible();
     await page.getByLabel('New public comment').fill('Printing works now, thanks.');await page.getByRole('button',{name:'Post comment'}).click();await expect(page.getByText('Comment posted.',{exact:true})).toBeVisible();
     await page.screenshot({path:`artifacts/lab-03/issue7-${info.project.name}-requester.png`,fullPage:true});
-    await logout();await login(0);await openStaff();await saveStatus('RESOLVED');await saveStatus('REOPENED');await expect(page.getByText(/Requester reported apparent resolution/)).toHaveCount(0);
+    // Lab 4 resolution gate: a ticket needs at least one action taken before it can be resolved.
+    await db.query('INSERT INTO "ActionTaken" ("ticketId","performedById",description,result,"requestKey","updatedAt") VALUES ($1,$2,$3,$4,$5,NOW())',[ticketId,users[0].id,'Restarted the print service','Printing works','00000000-0000-4000-8000-'+String(suffix).padStart(12,'0').slice(-12)]);
+    await logout();await login(0);await openStaff();
+    await saveStatus('RESOLVED');await saveStatus('REOPENED');await expect(page.getByText(/Requester reported apparent resolution/)).toHaveCount(0);
     await logout();await login(2);await openStaff();await expect(page.getByText('Private diagnosis: inspect the print service.',{exact:true})).toBeVisible();await expect(page.getByRole('button',{name:'Save changes'})).toHaveCount(0);await expect(page.getByLabel('New public comment')).toHaveCount(0);await expect(page.getByLabel('New internal note')).toHaveCount(0);
     await page.screenshot({path:`artifacts/lab-03/issue7-${info.project.name}-admin.png`,fullPage:true});await logout();
   }finally{
-    if(ticketId){await db.query('DELETE FROM "TicketEntry" WHERE "ticketId"=$1',[ticketId]);await db.query('DELETE FROM "Ticket" WHERE id=$1',[ticketId])}
+    if(ticketId){await db.query('DELETE FROM "ActionTaken" WHERE "ticketId"=$1',[ticketId]);await db.query('DELETE FROM "TicketEntry" WHERE "ticketId"=$1',[ticketId]);await db.query('DELETE FROM "Ticket" WHERE id=$1',[ticketId])}
     for(const user of users){await db.query('DELETE FROM "Session" WHERE "userId"=$1',[user.id]);await db.query('DELETE FROM "RequesterUser" WHERE id=$1',[user.id])}await db.end();
   }
 });

@@ -1,6 +1,7 @@
 import request from 'supertest';
 import app from '../src/app';
 import { prisma } from '../src/prisma';
+import { randomUUID } from 'crypto';
 import { digest, randomToken, transitions } from '../src/security';
 
 const users:number[]=[], tickets:number[]=[], sessions:{cookie:string;csrf:string}[]=[];
@@ -15,13 +16,16 @@ beforeAll(async()=>{
   }
 });
 afterAll(async()=>{
+  await prisma.actionTaken.deleteMany({where:{ticketId:{in:tickets}}});
   await prisma.ticketEntry.deleteMany({where:{ticketId:{in:tickets}}});
   await prisma.ticket.deleteMany({where:{id:{in:tickets}}});
   await prisma.user.deleteMany({where:{id:{in:users}}});await prisma.$disconnect();
 });
 const call=(actor:number,method:'get'|'post'|'patch'|'delete',url:string,body?:any)=>request(app)[method](url).set('Cookie',sessions[actor].cookie).set('X-CSRF-Token',sessions[actor].csrf).send(body);
 async function ticket(status:any='NEW'){
-  const t=await prisma.ticket.create({data:{ticketNumber:`WF-${randomToken()}`,summary:'Workflow test',description:'Workflow test description',requesterId:users[2],categoryId,relatedSystemId,requestedPriority:'LOW',itPriority:'LOW',currentStatus:status}});tickets.push(t.id);return t;
+  const t=await prisma.ticket.create({data:{ticketNumber:`WF-${randomToken()}`,summary:'Workflow test',description:'Workflow test description',requesterId:users[2],categoryId,relatedSystemId,requestedPriority:'LOW',itPriority:'LOW',currentStatus:status}});tickets.push(t.id);
+  // Lab 4 resolution gate: fixtures carry one action so Lab 3 transition checks stay focused on the matrix.
+  await prisma.actionTaken.create({data:{ticketId:t.id,performedById:users[0],description:'Fixture action',result:'Fixture result',requestKey:randomUUID()}});return t;
 }
 test('concurrent claims have one winner and stale updates cannot overwrite it',async()=>{
   const t=await ticket();const results=await Promise.all([0,1].map(a=>call(a,'post',`/api/staff/tickets/${t.id}/claim`,{version:0})));

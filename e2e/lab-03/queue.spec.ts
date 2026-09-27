@@ -8,11 +8,11 @@ const config=localRequire('../../server/node_modules/dotenv').parse(readFileSync
 const password='Local queue password 123!';
 for(const role of ['IT_STAFF','ADMINISTRATOR']) {
  test(`${role} queue filters, pagination and read-only detail`,async({page},info)=>{
-  if(new URL(config.DATABASE_URL).pathname!=='/toktickit_lab3_test')throw new Error('Isolated test database required');
+  if(new URL(process.env.DATABASE_URL||config.DATABASE_URL).pathname!=='/toktickit_lab4_test')throw new Error('Isolated test database required');
   const email=`queue-browser-${role.toLowerCase()}-${Date.now()}@example.test`;
   const salt=randomBytes(16).toString('hex');
   const hash=`scrypt$${salt}$${scryptSync(password,salt,64,{N:32768,r:8,p:3,maxmem:64*1024*1024}).toString('hex')}`;
-  const db=new Client({connectionString:config.DATABASE_URL});await db.connect();
+  const db=new Client({connectionString:process.env.DATABASE_URL||config.DATABASE_URL});await db.connect();
   const user=await db.query('INSERT INTO "RequesterUser" (name,email,"passwordHash",role,"mustChangePassword","updatedAt") VALUES ($1,$2,$3,$4,false,NOW()) RETURNING id',['Queue Reviewer',email,hash,role]);
   try {
    await page.goto('/');await page.getByLabel('Email',{exact:true}).fill(email);await page.getByLabel('Password',{exact:true}).fill(password);await page.getByRole('button',{name:'Sign in',exact:true}).click();
