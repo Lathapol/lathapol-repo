@@ -6,19 +6,28 @@ import Login from "./pages/Login"
 import { useAuth } from "./context/AuthContext"
 import CreateTicket from "./pages/CreateTicket"
 import MyTickets from "./pages/MyTickets"
+import type { MyTicketsFilter } from "./pages/MyTickets"
 import TicketDetail from "./pages/TicketDetail"
+import RequesterDashboard from "./pages/RequesterDashboard"
+import StaffDashboard from "./pages/StaffDashboard"
 import "./App.css"
 
-type Page = { type: "myTickets" } | { type: "createTicket" } | { type: "ticketDetail"; id: number }
+type Page = { type: "dashboard" } | { type: "myTickets" } | { type: "createTicket" } | { type: "ticketDetail"; id: number }
 
 function RequesterApp() {
   const {logout}=useAuth()
   const [logoutError,setLogoutError]=useState(""),[loggingOut,setLoggingOut]=useState(false)
   const { requester } = useRequester()
-  const [page, setPage] = useState<Page>({ type: "myTickets" })
+  const [page, setPage] = useState<Page>({ type: "dashboard" })
+  const [myTicketsFilter, setMyTicketsFilter] = useState<MyTicketsFilter | undefined>(undefined)
 
   if (!requester) {
     return null
+  }
+
+  function goMyTickets(filter?: MyTicketsFilter) {
+    setMyTicketsFilter(filter)
+    setPage({ type: "myTickets" })
   }
 
   return (
@@ -28,13 +37,22 @@ function RequesterApp() {
           <span className="navbar-brand text-white fw-bold">TokTickIT</span>
           <div className="d-flex gap-3">
             <button
+              className={`btn btn-sm ${page.type === "dashboard" ? "btn-light" : "btn-outline-light"}`}
+              aria-current={page.type === "dashboard" ? "page" : undefined}
+              onClick={() => setPage({ type: "dashboard" })}
+            >
+              Dashboard
+            </button>
+            <button
               className={`btn btn-sm ${page.type === "myTickets" ? "btn-light" : "btn-outline-light"}`}
-              onClick={() => setPage({ type: "myTickets" })}
+              aria-current={page.type === "myTickets" ? "page" : undefined}
+              onClick={() => goMyTickets(undefined)}
             >
               My Tickets
             </button>
             <button
               className={`btn btn-sm ${page.type === "createTicket" ? "btn-light" : "btn-outline-light"}`}
+              aria-current={page.type === "createTicket" ? "page" : undefined}
               onClick={() => setPage({ type: "createTicket" })}
             >
               Create Ticket
@@ -56,8 +74,16 @@ function RequesterApp() {
       </nav>
 
       {logoutError && <div role="alert" className="alert alert-danger">{logoutError}</div>}
+      {page.type === "dashboard" && (
+        <RequesterDashboard
+          onOpenTicket={(id) => setPage({ type: "ticketDetail", id })}
+          onNavigateMyTickets={goMyTickets}
+        />
+      )}
       {page.type === "myTickets" && (
         <MyTickets
+          key={myTicketsFilter ? JSON.stringify(myTicketsFilter) : "default"}
+          initialFilter={myTicketsFilter}
           onCreateTicket={() => setPage({ type: "createTicket" })}
           onOpenTicket={(id) => setPage({ type: "ticketDetail", id })}
         />
@@ -74,13 +100,32 @@ function RoleHome(){
   const {user,logout,refresh}=useAuth()
   const [error,setError]=useState('')
   const [ticketId,setTicketId]=useState<number|null>(null)
-  const [view,setView]=useState<'users'|'queue'>(user?.role==='ADMINISTRATOR'?'users':'queue')
+  const [view,setView]=useState<'dashboard'|'users'|'queue'>('dashboard')
+  const [queueFilter,setQueueFilter]=useState<Record<string,string>|undefined>(undefined)
   const [busy,setBusy]=useState(false)
   if(!user)return null
+  const isAdmin = user.role === 'ADMINISTRATOR'
+
+  function goDashboard(){setView('dashboard');setTicketId(null)}
+  function goUsers(){setView('users');setTicketId(null)}
+  function goQueue(filter?:Record<string,string>){setQueueFilter(filter);setView('queue');setTicketId(null)}
+
   return <RequesterProvider key={user.id} initialRequester={user}>
-    <nav className="navbar queue-nav"><div className="container"><strong>TokTickIT</strong>{user.role==='ADMINISTRATOR'&&<div className="d-flex gap-2"><button className="btn btn-outline-light" aria-current={view==='users'?'page':undefined} onClick={()=>setView('users')}>Users</button><button className="btn btn-outline-light" aria-current={view==='queue'?'page':undefined} onClick={()=>{setView('queue');setTicketId(null)}}>Ticket Queue</button></div>}<span>{user.name} · {user.role==='IT_STAFF'?'IT Staff':'Administrator'}</span><button className="btn btn-outline-light" disabled={busy} onClick={async()=>{setBusy(true);try{await logout()}catch{setError('Unable to sign out. Please retry.')}finally{setBusy(false)}}}>Sign out</button></div></nav>
+    <nav className="navbar queue-nav"><div className="container">
+      <strong>TokTickIT</strong>
+      <div className="d-flex gap-2">
+        <button className="btn btn-outline-light" aria-current={view==='dashboard'?'page':undefined} onClick={goDashboard}>Dashboard</button>
+        {isAdmin&&<button className="btn btn-outline-light" aria-current={view==='users'?'page':undefined} onClick={goUsers}>Users</button>}
+        <button className="btn btn-outline-light" aria-current={view==='queue'?'page':undefined} onClick={()=>goQueue(undefined)}>Ticket Queue</button>
+      </div>
+      <span>{user.name} · {user.role==='IT_STAFF'?'IT Staff':'Administrator'}</span>
+      <button className="btn btn-outline-light" disabled={busy} onClick={async()=>{setBusy(true);try{await logout()}catch{setError('Unable to sign out. Please retry.')}finally{setBusy(false)}}}>Sign out</button>
+    </div></nav>
     {error&&<p role="alert">{error}</p>}
-    {view==='users'&&user.role==='ADMINISTRATOR'?<Users currentUserId={user.id} onSelfChange={refresh}/>:ticketId===null?<TicketQueue onOpenTicket={setTicketId}/>:<TicketDetail ticketId={ticketId} viewerRole={user.role} readOnly onBack={()=>setTicketId(null)}/>}
+    {view==='users'&&isAdmin ? <Users currentUserId={user.id} onSelfChange={refresh}/>
+      : ticketId!==null ? <TicketDetail ticketId={ticketId} viewerRole={user.role} readOnly onBack={()=>setTicketId(null)}/>
+      : view==='dashboard' ? <StaffDashboard isAdmin={isAdmin} onOpenTicket={setTicketId} onNavigateQueue={goQueue} onNavigateUsers={goUsers}/>
+      : <TicketQueue key={queueFilter?JSON.stringify(queueFilter):'default'} initialFilter={queueFilter} onOpenTicket={setTicketId}/>}
   </RequesterProvider>
 }
 function App(){

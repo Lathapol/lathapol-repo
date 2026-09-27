@@ -25,7 +25,7 @@ test('login, first change, create with attachment, filter, reload, remove and lo
   await expect(page.getByRole('button',{name:'My Tickets',exact:true})).toHaveCount(0);
   await page.getByLabel('Current password',{exact:true}).fill(initial);await page.getByLabel('New password',{exact:true}).fill(changed);await page.getByLabel('Confirm new password',{exact:true}).fill(changed);
   await page.getByRole('button',{name:'Change password',exact:true}).click();
-  await expect(page.getByRole('heading',{name:'My Tickets',exact:true})).toBeVisible();
+  await expect(page.getByRole('heading',{name:'My Dashboard',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Create Ticket',exact:true}).click();
   await page.getByLabel('Category').selectOption('1');await page.getByLabel('Related System').selectOption('1');
   await page.getByLabel('Summary').fill('Browser workflow verification');await page.getByLabel('Description').fill('Verify authenticated creation and attachment persistence.');
@@ -41,7 +41,7 @@ test('login, first change, create with attachment, filter, reload, remove and lo
   await page.screenshot({path:`artifacts/lab-03/issue7-${info.project.name}-tickets.png`,fullPage:true});
   await page.keyboard.press('Enter');await expect(page.getByRole('button',{name:'Back to My Tickets'})).toBeVisible();await page.getByRole('button',{name:'My Tickets',exact:true}).click();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
-  await page.reload();await expect(page.getByRole('heading',{name:'My Tickets',exact:true})).toBeVisible();
+  await page.reload();await expect(page.getByRole('heading',{name:'My Dashboard',exact:true})).toBeVisible();
   await page.getByRole('button',{name:'Sign out',exact:true}).click();await expect(page.getByRole('button',{name:'Sign in',exact:true})).toBeVisible();
   await page.reload();await expect(page.getByRole('button',{name:'Sign in',exact:true})).toBeVisible();
 });

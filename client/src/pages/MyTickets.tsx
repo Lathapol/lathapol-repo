@@ -5,14 +5,16 @@ import type { TicketListItem, TicketListMeta } from "../api"
 
 type LoadState = "loading" | "success" | "error"
 
+export type MyTicketsFilter = { status?: string; group?: string; recent?: string }
 interface Props {
   onCreateTicket: () => void
   onOpenTicket: (id: number) => void
+  initialFilter?: MyTicketsFilter
 }
 
 const PAGE_SIZE = 10
 
-export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
+export default function MyTickets({ onCreateTicket, onOpenTicket, initialFilter }: Props) {
   const { requester } = useRequester()
 
   const [loadState, setLoadState] = useState<LoadState>("loading")
@@ -22,7 +24,9 @@ export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
   const [search, setSearch] = useState("")
   const [category, setCategory] = useState("")
   const [priority, setPriority] = useState("")
-  const [status, setStatus] = useState("")
+  const [status, setStatus] = useState(initialFilter?.status ?? "")
+  const [group, setGroup] = useState(initialFilter?.group ?? "")
+  const [recent, setRecent] = useState(initialFilter?.recent ?? "")
   const [sort, setSort] = useState("createdAt")
   const [order, setOrder] = useState<"asc" | "desc">("desc")
   const [page, setPage] = useState(1)
@@ -41,6 +45,8 @@ export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
       category: category ? Number(category) : undefined,
       priority: priority || undefined,
       status: status || undefined,
+      group: group || undefined,
+      recent: recent || undefined,
       sort,
       order,
       page,
@@ -54,7 +60,7 @@ export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
       })
       .catch(() => {if(current)setLoadState("error")})
     return ()=>{current=false}
-  }, [requester, search, category, priority, status, sort, order, page,retry])
+  }, [requester, search, category, priority, status, group, recent, sort, order, page,retry])
 
   function handleSort(field: string) {
     if (sort === field) {
@@ -71,12 +77,15 @@ export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
     setCategory("")
     setPriority("")
     setStatus("")
+    setGroup("")
+    setRecent("")
     setSort("createdAt")
     setOrder("desc")
     setPage(1)
   }
 
-  const hasAnyFilter = Boolean(search || category || priority || status)
+  const hasAnyFilter = Boolean(search || category || priority || status || group)
+  const groupLabel = group === 'open' ? 'open tickets' : group === 'resolved' ? 'resolved tickets' : ''
 
   return (
     <div className="container py-4">
@@ -94,6 +103,7 @@ export default function MyTickets({ onCreateTicket, onOpenTicket }: Props) {
           </button>
         </div>
       </div>
+      {groupLabel && <p role="status" className="dashboard-filter-note">Showing {groupLabel} from your dashboard. <button className="btn btn-link p-0" onClick={() => { setGroup(''); setRecent('') }}>Clear this filter</button></p>}
 
       <div className="row g-2 mb-3">
         <div className="col-md-4">

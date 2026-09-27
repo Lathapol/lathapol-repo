@@ -15,7 +15,8 @@ test('E2E-01 staff add and edit actions, different performers, requester read-on
   const shots=`artifacts/lab-04/screenshots/actions-taken`;mkdirSync(shots,{recursive:true});
   async function login(index:number){
     await page.goto('/');await page.getByLabel('Email',{exact:true}).fill(users[index].email);await page.getByLabel('Password',{exact:true}).fill(password);await page.getByRole('button',{name:'Sign in',exact:true}).click();
-    await expect(page.getByRole('heading',{name:index===2?'My Tickets':'Ticket Queue',exact:true})).toBeVisible();
+    await expect(page.getByRole('heading',{name:index===2?'My Dashboard':'IT Staff Dashboard',exact:true})).toBeVisible();
+    await page.getByRole('button',{name:index===2?'My Tickets':'Ticket Queue',exact:true}).click();
   }
   async function logout(){await page.getByRole('button',{name:'Sign out',exact:true}).click();await expect(page.getByRole('button',{name:'Sign in',exact:true})).toBeVisible()}
   async function openTicket(staff:boolean){
