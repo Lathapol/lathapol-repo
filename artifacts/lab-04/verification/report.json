@@ -1,0 +1,63 @@
+{
+  "testedCommit": "d221bba8422add08cffe8f7dd45440a52997ca9e",
+  "startedAt": "2026-09-28T11:54:33.174Z",
+  "steps": [
+    {
+      "name": "server-tests",
+      "directory": "server",
+      "command": "node node_modules/jest/bin/jest.js --runInBand --testTimeout=15000",
+      "exitCode": 0,
+      "log": "artifacts/lab-04/verification/server-tests.log"
+    },
+    {
+      "name": "server-build",
+      "directory": "server",
+      "command": "node node_modules/typescript/bin/tsc --noEmit",
+      "exitCode": 0,
+      "log": "artifacts/lab-04/verification/server-build.log"
+    },
+    {
+      "name": "client-tests",
+      "directory": "client",
+      "command": "node node_modules/vitest/vitest.mjs run",
+      "exitCode": 0,
+      "log": "artifacts/lab-04/verification/client-tests.log"
+    },
+    {
+      "name": "client-types",
+      "directory": "client",
+      "command": "node node_modules/typescript/bin/tsc -b",
+      "exitCode": 0,
+      "log": "artifacts/lab-04/verification/client-types.log"
+    },
+    {
+      "name": "client-build",
+      "directory": "client",
+      "command": "node node_modules/vite/bin/vite.js build",
+      "exitCode": 0,
+      "log": "artifacts/lab-04/verification/client-build.log"
+    },
+    {
+      "name": "migration-check",
+      "directory": ".",
+      "command": "node scripts/verify-lab4-migration.cjs",
+      "exitCode": 0,
+      "log": "artifacts/lab-04/verification/migration-check.log"
+    },
+    {
+      "name": "browser-tests-lab4",
+      "directory": ".",
+      "command": "node node_modules/@playwright/test/cli.js test --config playwright.lab4.config.ts",
+      "exitCode": 0,
+      "log": "artifacts/lab-04/verification/browser-tests-lab4.log"
+    },
+    {
+      "name": "browser-tests-lab3-regression",
+      "directory": ".",
+      "command": "node node_modules/@playwright/test/cli.js test --config playwright.lab3.config.ts",
+      "exitCode": 0,
+      "log": "artifacts/lab-04/verification/browser-tests-lab3-regression.log"
+    }
+  ],
+  "finishedAt": "2026-09-28T11:58:32.032Z"
+}
