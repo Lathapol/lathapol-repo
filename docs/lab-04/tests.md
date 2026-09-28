@@ -1,6 +1,6 @@
 # Lab 4 test plan and traceability
 
-Written alongside the specification and before implementation. Final status is filled in as each issue merges; "Planned" means not yet run. Tests use the isolated `toktickit_lab4_test` database (the Jest guard refuses other names).
+Written alongside the specification and before implementation. Final status is filled in as each issue merges; Every row is now Pass; see the integrated results below. Tests use the isolated `toktickit_lab4_test` database (the Jest guard refuses other names).
 
 | Test ID | Type | AC | What it tests | Expected | Automated test file | Final |
 |---|---|---|---|---|---|---|
@@ -24,12 +24,16 @@ Written alongside the specification and before implementation. Final status is f
 | COMP-02 | UI component | AC-08,14 | Status controls show allowed transitions, gate hint, confirm dialog | Pass | client/tests/lab-04/TicketWorkflow.test.tsx | Pass |
 | COMP-03 | UI component | AC-15 | Staff dashboard states + links | Pass | client/tests/lab-04/StaffDashboard.test.tsx | Pass |
 | COMP-04 | UI component | AC-10,15 | Requester dashboard states + links | Pass | client/tests/lab-04/RequesterDashboard.test.tsx | Pass |
-| E2E-01 | E2E | AC-01,03,04,14 | Staff creates/edits actions on a ticket, multiple performers | Pass | e2e/lab-04/actions-taken-flow.spec.ts | Pass |
+| E2E-01 | E2E | AC-01,03,04,14 | Staff creates/edits actions on a ticket, multiple performers | Pass | e2e/lab-04/actions-taken-flow.spec.ts; e2e/lab-04/accessibility.spec.ts | Pass |
 | E2E-02 | E2E | AC-08,09 | Resolution gate and close flow | Pass | e2e/lab-04/ticket-resolution.spec.ts | Pass |
 | E2E-03 | E2E | AC-11,12,15 | Dashboards + drill-down, all roles | Pass | e2e/lab-04/dashboards.spec.ts | Pass |
-| RESP-01 | UI style/responsive | AC-17 | Screens at 1440/820/390: no overflow/clipping, focus visible | Pass | e2e/lab-04/dashboards.spec.ts; e2e/lab-04/actions-taken-flow.spec.ts | Planned |
-| A11Y-01 | Accessibility | AC-17 | Labels, aria-current, dialog focus, keyboard-only flow | Pass | e2e/lab-04/actions-taken-flow.spec.ts | Planned |
+| RESP-01 | UI style/responsive | AC-17 | Screens at 1440/820/390: no overflow/clipping, focus visible | Pass | e2e/lab-04/dashboards.spec.ts; e2e/lab-04/actions-taken-flow.spec.ts; e2e/lab-04/accessibility.spec.ts | Pass |
+| A11Y-01 | Accessibility | AC-17 | Labels, aria-current, dialog focus, keyboard-only flow | Pass | e2e/lab-04/actions-taken-flow.spec.ts; e2e/lab-04/accessibility.spec.ts | Pass |
 | PERF-01 | Performance smoke | AC-11 | Staff dashboard on seeded data responds under 1 s | Pass | server/tests/lab-04/staff-dashboard.api.test.ts | Pass |
-| REG-01 | Regression | AC-18 | Labs 1–3 server, client and E2E suites | All pass | server/tests/lab-01..03; client/tests/lab-01..03; e2e/lab-02..03 | Planned |
+| REG-01 | Regression | AC-18 | Labs 1–3 server, client and E2E suites | All pass | server/tests/lab-01..03; client/tests/lab-01..03; e2e/lab-02..03 | Pass |
 
 Traceability rule: each of AC-01..AC-18 appears in at least one row above (AC-01..18 covered by rows API-01..13, MIG-01, COMP-01..04, E2E-01..03, RESP-01, A11Y-01, REG-01).
+
+## Integrated results (issue 6)
+
+`node scripts/verify-lab4.cjs` against `toktickit_lab4_test`: server 19 suites / 261 tests, client 11 files / 59 tests, server and client type checks, Vite build, migration check (Lab 3 data preserved, repeat seed identical, rollback restores Lab 3), Lab 4 browser suite 12 scenarios and Lab 3 browser regression 15 scenarios (desktop 1440x1000, tablet 820x1180, mobile 390x844) all pass. Commands, exit codes and logs are in `artifacts/lab-04/verification/` (report.json). The report was produced on the issue 6 working tree; the final-main run is repeated in issue 7.

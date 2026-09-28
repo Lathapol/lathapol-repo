@@ -136,3 +136,14 @@ it('COMP-01 shows a safe load failure with a retry', async () => {
   fireEvent.click(screen.getByRole('button', { name: 'Reload actions' }))
   expect(await screen.findByText('Reset the mailbox')).toBeInTheDocument()
 })
+
+it('A11Y-01 a failed validation moves keyboard focus to the first invalid field', async () => {
+  render(<ActionsTaken ticketId={5} role="IT_STAFF" ticketStatus="OPEN" />)
+  fireEvent.click(await screen.findByRole('button', { name: 'Add action' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Save action' }))
+  expect(screen.getByLabelText('Action description')).toHaveFocus()
+  fill('Action description', 'Something done')
+  fireEvent.click(screen.getByRole('button', { name: 'Save action' }))
+  expect(screen.getByLabelText('Result')).toHaveFocus()
+  expect(screen.getByLabelText('Result')).toHaveAttribute('aria-describedby', 'action-result-error')
+})

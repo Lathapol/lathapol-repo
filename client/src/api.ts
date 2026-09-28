@@ -30,20 +30,6 @@ export async function fetchCategories(): Promise<Category[]> {
   return res.json()
 }
 
-export interface Requester {
-  id: number
-  name: string
-  email: string
-}
-
-export async function fetchRequesters(): Promise<Requester[]> {
-  const res = await apiFetch(`${API_URL}/api/requesters`)
-  if (!res.ok) {
-    throw new Error("Failed to fetch requesters")
-  }
-  return res.json()
-}
-
 export interface RelatedSystem {
   id: number
   name: string

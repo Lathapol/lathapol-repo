@@ -50,6 +50,9 @@ export default function ActionsTaken({ ticketId, role, ticketStatus, onCountChan
     event.preventDefault(); setFormError(''); setSuccess('')
     const found = validateAction(draft)
     setErrors(found)
+    // Keyboard and screen-reader users land on the first field that needs fixing.
+    const firstInvalid = (['description', 'result', 'followUpNote', 'attachmentNotes'] as const).find(key => found[key])
+    if (firstInvalid) document.getElementById(`action-${firstInvalid}`)?.focus()
     if (Object.keys(found).length || !mode) return
     const input = { description: draft.description.trim(), result: draft.result.trim(), followUpRequired: draft.followUpRequired, followUpNote: draft.followUpRequired ? draft.followUpNote.trim() : null, attachmentNotes: draft.attachmentNotes.trim() || null }
     setBusy(true)
