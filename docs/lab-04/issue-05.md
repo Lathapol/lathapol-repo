@@ -16,4 +16,4 @@ Depends on #50 (Actions Taken API, PR #57) and #52 (workflow/resolution gate, PR
 - Client: 11 files, 58 tests passed (14 new in `StaffDashboard.test.tsx`/`RequesterDashboard.test.tsx`), covering loading/error/forbidden/empty states and every card/row's drill-down target. `tsc -b` and Vite build passed.
 - Browser: `e2e/lab-04/dashboards.spec.ts` passed at 1440x1000, 820x1180 and 390x844 — a metric card drills into the filtered list, the filter banner clears, and a list row opens the ticket directly. The full Lab 4 suite (9 scenarios) and the full Lab 3 suite (15 scenarios) both still pass with the new Dashboard-first navigation. Screenshots inspected: `artifacts/lab-04/screenshots/{staff-dashboard,requester-dashboard}/{desktop,tablet,mobile}.png`.
 
-Peer review of issue 5 is pending. Final hardening, full regression and the remaining responsive/accessibility/regression rows in tests.md are issue 6.
+Peer review: approved by Kittakorn-P and merged as PR #60 (see reviewer.md). The remaining responsive, accessibility and regression rows in tests.md were completed in issue 6.
