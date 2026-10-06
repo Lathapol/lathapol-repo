@@ -18,4 +18,4 @@ Depends on #50 (Actions Taken API, merged in PR #57). Adds the Actions Taken are
 
 Run browser tests: start the API with `PORT=4103` and `APP_ORIGIN=http://localhost:5183`, Vite with `VITE_API_URL=http://localhost:4103` on port 5183, both with `DATABASE_URL` pointing at `toktickit_lab4_test`, then from the repository root `npx playwright test --config playwright.lab4.config.ts`.
 
-Peer review of issue 3 is pending. The status-control gate (issue 4), dashboards (issue 5) and final hardening (issue 6) are not part of this change.
+Peer review: approved by Kittakorn-P and merged as PR #58 (see reviewer.md). The status-control gate (issue 4), dashboards (issue 5) and final hardening (issue 6) are not part of this change.

@@ -18,4 +18,4 @@ Depends on #50 (Actions Taken API, PR #57) and #51 (Actions Taken UI, PR #58). F
 
 Run the browser tests as in issue-03.md, then `npx playwright test --config playwright.lab4.config.ts` and `--config playwright.lab3.config.ts`.
 
-Peer review of issue 4 is pending. Dashboards (issue 5) and final hardening (issue 6) are not part of this change.
+Peer review: approved by Kittakorn-P and merged as PR #59 (see reviewer.md). Dashboards (issue 5) and final hardening (issue 6) are not part of this change.
