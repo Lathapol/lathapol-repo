@@ -1,0 +1,37 @@
+{
+  "checkedAt": "2026-09-24T03:22:56.760Z",
+  "sourceTemplate": "toktickit_lab3_test",
+  "evidenceDatabase": "toktickit_lab4_evidence_1790220168707",
+  "lab3Counts": {
+    "RequesterUser": 26,
+    "Ticket": 164,
+    "Attachment": 38,
+    "Category": 4,
+    "RelatedSystem": 7,
+    "TicketEntry": 48,
+    "Session": 1
+  },
+  "lab3DigestBefore": "5edc5126cf0e51576114bbfb43bb2c7c6cf7f48a20070790de9efa692357b21f",
+  "lab3DigestAfterMigration": "5edc5126cf0e51576114bbfb43bb2c7c6cf7f48a20070790de9efa692357b21f",
+  "lab3RowsPreserved": true,
+  "legacyActionsCreatedByMigration": 0,
+  "afterSeedCounts": {
+    "RequesterUser": 27,
+    "Ticket": 164,
+    "Attachment": 38,
+    "Category": 4,
+    "RelatedSystem": 7,
+    "TicketEntry": 48,
+    "ActionTaken": 24
+  },
+  "ticketsWithZeroOneManyActions": {
+    "zero": 152,
+    "one": 6,
+    "many": 6
+  },
+  "firstSeedDigest": "7208422d8830ed3987cc9acc49e9ea5c40136f6e7bc00e56638f82f05833ec92",
+  "secondSeedDigest": "7208422d8830ed3987cc9acc49e9ea5c40136f6e7bc00e56638f82f05833ec92",
+  "repeatSeedUnchanged": true,
+  "rollbackRestoredLab3": true,
+  "rollbackDigest": "5edc5126cf0e51576114bbfb43bb2c7c6cf7f48a20070790de9efa692357b21f"
+}

@@ -1,11 +1,13 @@
 import {afterEach,beforeEach,it,expect,vi} from 'vitest'
 import {render,screen,fireEvent,waitFor,cleanup} from '@testing-library/react'
 import TicketActivity from '../../src/components/TicketActivity'
-import {fetchEntries,fetchOwners,postEntry,updateWorkflow,appearsResolved} from '../../src/api'
+import {fetchActions,fetchEntries,fetchOwners,postEntry,updateWorkflow,appearsResolved} from '../../src/api'
 import type {TicketDetail} from '../../src/api'
-vi.mock('../../src/api',()=>({fetchEntries:vi.fn(),fetchOwners:vi.fn(),postEntry:vi.fn(),updateWorkflow:vi.fn(),appearsResolved:vi.fn()}))
+vi.mock('../../src/api',()=>({fetchActions:vi.fn().mockResolvedValue([]),fetchEntries:vi.fn(),fetchOwners:vi.fn(),postEntry:vi.fn(),updateWorkflow:vi.fn(),appearsResolved:vi.fn()}))
 const ticket:TicketDetail={id:1,ticketNumber:'TK1',summary:'Broken printer',description:'Printer is unavailable',category:'Hardware',relatedSystem:'Printing',requestedPriority:'LOW',itPriority:'HIGH',currentStatus:'OPEN',version:3,ownerId:null,owner:null,requester:{name:'Jane'},createdAt:'2026-01-01',updatedAt:'2026-01-01',attachments:[]}
-beforeEach(()=>{vi.mocked(fetchEntries).mockResolvedValue([]);vi.mocked(fetchOwners).mockResolvedValue([]);vi.mocked(updateWorkflow).mockResolvedValue({});vi.mocked(appearsResolved).mockResolvedValue({})})
+// Lab 4 resolution gate: the fixture ticket has one action so these Lab 3 checks can still resolve it.
+const oneAction={id:1,ticketId:1,description:'Fixture action',result:'Fixture result',followUpRequired:false,followUpNote:null,attachmentNotes:null,version:0,createdAt:'2026-01-01',updatedAt:'2026-01-01',performedBy:{id:2,name:'Staff'}}
+beforeEach(()=>{vi.mocked(fetchActions).mockResolvedValue([oneAction]);vi.mocked(fetchEntries).mockResolvedValue([]);vi.mocked(fetchOwners).mockResolvedValue([]);vi.mocked(updateWorkflow).mockResolvedValue({});vi.mocked(appearsResolved).mockResolvedValue({})})
 afterEach(()=>{cleanup();vi.resetAllMocks()})
 it('requires confirmation for resolution and sends expected version',async()=>{
   const refresh=vi.fn();render(<TicketActivity ticket={ticket} role="IT_STAFF" onRefresh={refresh}/>);

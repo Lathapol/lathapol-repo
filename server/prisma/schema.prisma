@@ -32,6 +32,7 @@ model User {
   ownedTickets Ticket[] @relation("OwnedTickets")
   sessions Session[]
   entries TicketEntry[]
+  actionsTaken ActionTaken[] @relation("PerformedActions")
 
   @@map("RequesterUser")
 }
@@ -68,10 +69,13 @@ model Ticket {
 
   attachments       Attachment[]
   entries           TicketEntry[]
+  actions           ActionTaken[]
 
   @@index([requesterId])
   @@index([currentStatus])
   @@index([ownerId])
+  @@index([updatedAt])
+  @@index([ownerId, currentStatus])
 }
 
 model Attachment {
@@ -139,4 +143,24 @@ model TicketEntry {
   body String
   createdAt DateTime @default(now())
   @@index([ticketId, kind, createdAt])
+}
+
+model ActionTaken {
+  id Int @id @default(autoincrement())
+  ticketId Int
+  ticket Ticket @relation(fields: [ticketId], references: [id])
+  performedById Int
+  performedBy User @relation("PerformedActions", fields: [performedById], references: [id])
+  description String
+  result String
+  followUpRequired Boolean @default(false)
+  followUpNote String?
+  attachmentNotes String?
+  requestKey String
+  version Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([ticketId, requestKey])
+  @@index([ticketId, createdAt, id])
+  @@index([performedById, createdAt])
 }

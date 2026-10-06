@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { appearsResolved, fetchEntries, fetchOwners, postEntry, updateWorkflow } from '../api'
 import type { TicketDetail, TicketEntry, QueueOwner } from '../api'
+import ActionsTaken from './ActionsTaken'
 
 const transitions: Record<string,string[]> = {
   NEW:['OPEN','CANCELLED'], OPEN:['IN_PROGRESS','WAITING_FOR_REQUESTER','RESOLVED','CANCELLED'],
@@ -43,6 +44,7 @@ export default function TicketActivity({ticket,role,onRefresh}:{ticket:TicketDet
   const [owners,setOwners]=useState<QueueOwner[]>([]),[ownersError,setOwnersError]=useState(false),[ownerRetry,setOwnerRetry]=useState(0)
   const [owner,setOwner]=useState(String(ticket.ownerId??'')),[priority,setPriority]=useState(ticket.itPriority||'MEDIUM'),[status,setStatus]=useState('')
   const [confirmed,setConfirmed]=useState(false),[busy,setBusy]=useState(false),[error,setError]=useState('')
+  const [actionCount,setActionCount]=useState<number|null>(null)
   useEffect(()=>{
     if(role!=='IT_STAFF')return
     let current=true;setOwnersError(false)
@@ -50,6 +52,8 @@ export default function TicketActivity({ticket,role,onRefresh}:{ticket:TicketDet
     return()=>{current=false}
   },[role,ownerRetry])
   const needsConfirm=['RESOLVED','CLOSED','CANCELLED'].includes(status)
+  // Resolution gate hint: the server enforces it; here we only guide the user when we know there are no actions.
+  const needsAction=status==='RESOLVED'&&actionCount===0
   async function action(claim=false,signal=false) {
     setError('');setBusy(true)
     try {
@@ -72,13 +76,15 @@ export default function TicketActivity({ticket,role,onRefresh}:{ticket:TicketDet
             <label>Owner<select className="form-select" value={owner} onChange={e=>setOwner(e.target.value)}><option value="">Unassigned</option>{ticket.owner&&!owners.some(o=>o.id===ticket.ownerId)&&<option value={ticket.owner.id}>{ticket.owner.name} (current owner)</option>}{owners.map(o=><option key={o.id} value={o.id}>{o.name}</option>)}</select></label>
             <label>IT priority<select className="form-select" value={priority} onChange={e=>setPriority(e.target.value)}>{['LOW','MEDIUM','HIGH'].map(p=><option key={p}>{p}</option>)}</select></label>
             <label>Change status<select className="form-select" value={status} onChange={e=>{setStatus(e.target.value);setConfirmed(false)}}><option value="">Keep {readable(ticket.currentStatus)}</option>{transitions[ticket.currentStatus].map(s=><option key={s} value={s}>{readable(s)}</option>)}</select></label>
+            {needsAction&&<p className="workflow-confirm" role="status">Log an action first: add at least one action in Actions Taken below before resolving this ticket.</p>}
             {needsConfirm&&<label className="workflow-confirm"><input type="checkbox" checked={confirmed} onChange={e=>setConfirmed(e.target.checked)}/> Confirm changing status to {readable(status)}</label>}
-            <div className="workflow-buttons"><button className="btn btn-success" disabled={ownersError||(needsConfirm&&!confirmed)||(!status&&owner===String(ticket.ownerId??'')&&priority===ticket.itPriority)}>{busy?'Saving…':'Save changes'}</button>{ticket.ownerId===null&&<button type="button" className="btn btn-outline-success" onClick={()=>void action(true)}>Claim ticket</button>}</div>
+            <div className="workflow-buttons"><button className="btn btn-success" disabled={ownersError||needsAction||(needsConfirm&&!confirmed)||(!status&&owner===String(ticket.ownerId??'')&&priority===ticket.itPriority)}>{busy?'Saving…':'Save changes'}</button>{ticket.ownerId===null&&<button type="button" className="btn btn-outline-success" onClick={()=>void action(true)}>Claim ticket</button>}</div>
           </fieldset>
         </form>
       </>}
       {role==='REQUESTER'&&!ticket.requesterResolvedAt&&!['CLOSED','CANCELLED'].includes(ticket.currentStatus)&&<><p>Tell support if the problem appears fixed. This does not resolve or close your ticket.</p><button className="btn btn-outline-success" disabled={busy} onClick={()=>void action(false,true)}>{busy?'Saving…':'This appears resolved'}</button></>}
     </section>
+    <ActionsTaken ticketId={ticket.id} role={role} ticketStatus={ticket.currentStatus} onCountChange={setActionCount}/>
     <Conversation ticketId={ticket.id} kind="comments" canWrite={role!=='ADMINISTRATOR'}/>
     {role!=='REQUESTER'&&<Conversation ticketId={ticket.id} kind="notes" canWrite={role==='IT_STAFF'}/>}
   </div>

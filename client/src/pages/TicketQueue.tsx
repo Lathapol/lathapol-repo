@@ -2,13 +2,14 @@ import { useEffect, useState } from 'react'
 import { fetchQueue, fetchOwners, fetchCategories } from '../api'
 import type { QueueResponse, QueueOwner, Category, QueueTicket } from '../api'
 
-const defaults = { search: '', status: '', priority: '', owner: 'all', category: '', sort: 'createdAt', order: 'desc', page: '1', pageSize: '10' }
+const defaults = { search: '', status: '', priority: '', owner: 'all', category: '', group: '', recent: '', sort: 'createdAt', order: 'desc', page: '1', pageSize: '10' }
 const statuses = ['NEW','OPEN','IN_PROGRESS','WAITING_FOR_REQUESTER','RESOLVED','CLOSED','REOPENED','CANCELLED']
 const label = (text: string) => text.replaceAll('_', ' ')
 
-export default function TicketQueue({ onOpenTicket }: { onOpenTicket: (id: number) => void }) {
-  const [draft, setDraft] = useState(defaults)
-  const [query, setQuery] = useState(defaults)
+export default function TicketQueue({ onOpenTicket, initialFilter }: { onOpenTicket: (id: number) => void; initialFilter?: Partial<typeof defaults> }) {
+  const start = { ...defaults, ...initialFilter }
+  const [draft, setDraft] = useState(start)
+  const [query, setQuery] = useState(start)
   const [data, setData] = useState<QueueResponse | null>(null)
   const [owners, setOwners] = useState<QueueOwner[]>([])
   const [categories, setCategories] = useState<Category[]>([])
@@ -25,12 +26,14 @@ export default function TicketQueue({ onOpenTicket }: { onOpenTicket: (id: numbe
     }).finally(() => { if (current) setLoading(false) })
     return () => { current = false }
   }, [query, retry])
-  const filtered = !!(query.search || query.status || query.priority || query.category || query.owner !== 'all')
+  const filtered = !!(query.search || query.status || query.priority || query.category || query.owner !== 'all' || query.group)
   const select = (key: keyof typeof defaults, title: string, options: [string, string][]) => <label className="queue-field">{title}<select className="form-select" value={draft[key]} onChange={e => setDraft({ ...draft, [key]: e.target.value })}>{options.map(([value, text]) => <option key={value} value={value}>{text}</option>)}</select></label>
   const badges = (ticket: QueueTicket) => <><span className="queue-badge">{ticket.itPriority}</span> <span className="queue-badge">{label(ticket.currentStatus)}</span></>
   const open = (ticket: QueueTicket) => <button className="btn btn-outline-success" aria-label={`Open ${ticket.ticketNumber}`} onClick={() => onOpenTicket(ticket.id)}>Open</button>
+  const groupLabel = query.group === 'open' ? 'open tickets' : query.group === 'resolved' ? 'resolved tickets' : ''
   return <main className="container queue-page py-4">
     <h1>Ticket Queue</h1><p>Find and review support tickets across the team.</p>
+    {groupLabel && <p role="status" className="dashboard-filter-note">Showing {groupLabel} from the dashboard. <button className="btn btn-link p-0" onClick={() => { setDraft({ ...draft, group: '', recent: '' }); setQuery({ ...query, group: '', recent: '' }) }}>Clear this filter</button></p>}
     <form className="queue-filters card p-3" onSubmit={e => { e.preventDefault(); setQuery({ ...draft, page: '1' }) }}>
       <label className="queue-search queue-field">Search<input className="form-control" maxLength={200} placeholder="Ticket number or summary" value={draft.search} onChange={e => setDraft({ ...draft, search: e.target.value })}/></label>
       {select('status', 'Status', [['','All statuses'], ...statuses.map(s => [s,label(s)] as [string,string])])}

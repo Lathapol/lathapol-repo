@@ -11,6 +11,7 @@ describe('Authentication screens',()=>{
       if(String(url).endsWith('/auth/change-password'))return new Response(JSON.stringify({user:{...user,mustChangePassword:false},csrfToken:'after'}));
       if(String(url).includes('/api/tickets'))return new Response(JSON.stringify({data:[],meta:{page:1,pageSize:10,totalCount:0,totalPages:1}}));
       if(String(url).includes('/api/categories'))return new Response('[]');
+      if(String(url).includes('/api/dashboard/requester'))return new Response(JSON.stringify({generatedAt:new Date().toISOString(),openCount:0,waitingCount:0,recentlyResolvedCount:0,recentlyUpdated:[],recentlyResolved:[]}));
       throw new Error('Unexpected request '+String(url)+options?.method)
     })
     render(<AuthProvider><App/></AuthProvider>)
@@ -23,6 +24,8 @@ describe('Authentication screens',()=>{
     expect(await screen.findByRole('alert')).toHaveTextContent('matching confirmation')
     fireEvent.change(screen.getByLabelText('Confirm new password'),{target:{value:'New password 456'}})
     fireEvent.click(screen.getByRole('button',{name:'Change password'}))
+    expect(await screen.findByRole('heading',{name:'My Dashboard'})).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button',{name:'My Tickets'}))
     expect(await screen.findByRole('heading',{name:'My Tickets'})).toBeInTheDocument()
     const sent=calls.mock.calls.find(([url])=>String(url).endsWith('/auth/change-password'))!
     expect(sent[1]?.credentials).toBe('include');expect(new Headers(sent[1]?.headers).get('X-CSRF-Token')).toBe('before')

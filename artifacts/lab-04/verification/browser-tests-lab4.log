@@ -1,0 +1,23 @@
+
+Running 12 tests using 1 worker
+
+  ok  1 [desktop] › e2e\lab-04\accessibility.spec.ts:11:5 › A11Y-01 keyboard-only flow, visible focus, landmarks and a clean console for every role (5.5s)
+  ok  2 [desktop] › e2e\lab-04\actions-taken-flow.spec.ts:10:5 › E2E-01 staff add and edit actions, different performers, requester read-only, responsive (5.8s)
+  ok  3 [desktop] › e2e\lab-04\dashboards.spec.ts:11:5 › E2E-03 role dashboards show metrics, drill-down to the filtered list, and rows open a ticket (3.2s)
+  ok  4 [desktop] › e2e\lab-04\ticket-resolution.spec.ts:11:5 › E2E-02 resolution gate: cannot resolve without an action, resolves after one, requester signal stays advisory (7.3s)
+  ok  5 [mobile] › e2e\lab-04\accessibility.spec.ts:11:5 › A11Y-01 keyboard-only flow, visible focus, landmarks and a clean console for every role (6.2s)
+  ok  6 [mobile] › e2e\lab-04\actions-taken-flow.spec.ts:10:5 › E2E-01 staff add and edit actions, different performers, requester read-only, responsive (8.7s)
+  ok  7 [mobile] › e2e\lab-04\dashboards.spec.ts:11:5 › E2E-03 role dashboards show metrics, drill-down to the filtered list, and rows open a ticket (2.5s)
+  ok  8 [mobile] › e2e\lab-04\ticket-resolution.spec.ts:11:5 › E2E-02 resolution gate: cannot resolve without an action, resolves after one, requester signal stays advisory (7.3s)
+  ok  9 [tablet] › e2e\lab-04\accessibility.spec.ts:11:5 › A11Y-01 keyboard-only flow, visible focus, landmarks and a clean console for every role (6.0s)
+  ok 10 [tablet] › e2e\lab-04\actions-taken-flow.spec.ts:10:5 › E2E-01 staff add and edit actions, different performers, requester read-only, responsive (9.8s)
+  ok 11 [tablet] › e2e\lab-04\dashboards.spec.ts:11:5 › E2E-03 role dashboards show metrics, drill-down to the filtered list, and rows open a ticket (3.1s)
+  ok 12 [tablet] › e2e\lab-04\ticket-resolution.spec.ts:11:5 › E2E-02 resolution gate: cannot resolve without an action, resolves after one, requester signal stays advisory (6.9s)
+
+  12 passed (1.3m)
+(node:25080) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:28604) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:7388) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)

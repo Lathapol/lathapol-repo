@@ -30,20 +30,6 @@ export async function fetchCategories(): Promise<Category[]> {
   return res.json()
 }
 
-export interface Requester {
-  id: number
-  name: string
-  email: string
-}
-
-export async function fetchRequesters(): Promise<Requester[]> {
-  const res = await apiFetch(`${API_URL}/api/requesters`)
-  if (!res.ok) {
-    throw new Error("Failed to fetch requesters")
-  }
-  return res.json()
-}
-
 export interface RelatedSystem {
   id: number
   name: string
@@ -119,6 +105,8 @@ export interface FetchTicketsParams {
   category?: number
   priority?: string
   status?: string
+  group?: string
+  recent?: string
   sort?: string
   order?: "asc" | "desc"
   page?: number
@@ -132,6 +120,8 @@ export async function fetchTickets(params: FetchTicketsParams): Promise<TicketLi
   if (params.category) query.set("category", String(params.category))
   if (params.priority) query.set("priority", params.priority)
   if (params.status) query.set("status", params.status)
+  if (params.group) query.set("group", params.group)
+  if (params.recent) query.set("recent", params.recent)
   if (params.sort) query.set("sort", params.sort)
   if (params.order) query.set("order", params.order)
   if (params.page) query.set("page", String(params.page))
@@ -271,6 +261,43 @@ export async function updateWorkflow(id: number, data: { version: number; ownerI
 }
 export async function appearsResolved(id: number) {
   return (await apiFetch(`${API_URL}/api/tickets/${id}/appears-resolved`, {method:'POST'})).json()
+}
+
+export interface ActionTaken {
+  id: number; ticketId: number; description: string; result: string
+  followUpRequired: boolean; followUpNote: string | null; attachmentNotes: string | null
+  version: number; createdAt: string; updatedAt: string; performedBy: { id: number; name: string }
+}
+export interface ActionInput { description: string; result: string; followUpRequired: boolean; followUpNote: string | null; attachmentNotes: string | null }
+export async function fetchActions(ticketId: number): Promise<ActionTaken[]> {
+  return (await apiFetch(`${API_URL}/api/tickets/${ticketId}/actions`)).json()
+}
+// requestKey lets the server treat a retry of the same submission as one action.
+export async function createAction(ticketId: number, requestKey: string, data: ActionInput): Promise<ActionTaken> {
+  return (await apiFetch(`${API_URL}/api/tickets/${ticketId}/actions`, {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({requestKey,...data})})).json()
+}
+export async function updateAction(id: number, version: number, data: ActionInput): Promise<ActionTaken> {
+  return (await apiFetch(`${API_URL}/api/actions/${id}`, {method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({version,...data})})).json()
+}
+
+export interface DashboardTicketRow { id: number; ticketNumber: string; summary: string; currentStatus: string; updatedAt: string }
+export interface RequesterDashboard {
+  generatedAt: string; openCount: number; waitingCount: number; recentlyResolvedCount: number
+  recentlyUpdated: DashboardTicketRow[]; recentlyResolved: DashboardTicketRow[]
+}
+export async function fetchRequesterDashboard(): Promise<RequesterDashboard> {
+  return (await apiFetch(`${API_URL}/api/dashboard/requester`)).json()
+}
+export interface StaffDashboardTicketRow extends DashboardTicketRow { itPriority: string; owner: { id: number; name: string } | null }
+export interface StaffDashboard {
+  generatedAt: string; unassignedCount: number; mineCount: number
+  byStatus: Record<string, number>; byItPriority: Record<string, number>
+  urgent: StaffDashboardTicketRow[]; recentlyUpdated: StaffDashboardTicketRow[]
+  myActions: { recentCount: number; recent: { id: number; ticketId: number; ticketNumber: string; summary: string; createdAt: string }[] }
+  users?: { REQUESTER: number; IT_STAFF: number; ADMINISTRATOR: number; inactive: number }
+}
+export async function fetchStaffDashboard(): Promise<StaffDashboard> {
+  return (await apiFetch(`${API_URL}/api/dashboard/staff`)).json()
 }
 
 export interface ManagedUser { id: number; name: string; email: string; role: 'REQUESTER'|'IT_STAFF'|'ADMINISTRATOR'; isActive: boolean; mustChangePassword: boolean }

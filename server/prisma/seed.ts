@@ -83,6 +83,29 @@ async function main() {
         entries:{create:[{authorId:requesterRows[i%requesterRows.length].id,kind:'PUBLIC',body:'Please help investigate this issue.'},{authorId:owner.id,kind:'INTERNAL',body:'Internal triage example; requester must not see this note.'}]},
       }});
     }
+    // Lab 4: Actions Taken fixtures. Fixed request keys make reruns change nothing.
+    // Tickets 1,5,9,... get one action, 2,6,10,... get three from different staff, the rest none.
+    await prisma.user.upsert({where:{email:'zero.tickets@example.com'},update:{},create:{name:'Zero Tickets',email:'zero.tickets@example.com',isActive:true}});
+    const performers=await prisma.user.findMany({where:{email:{in:['staff@example.com','alex.chen@example.com','morgan.lee@example.com']}},orderBy:{id:'asc'}});
+    const fixtureTickets=await prisma.ticket.findMany({where:{ticketNumber:{startsWith:'TKT-2000-'}},orderBy:{ticketNumber:'asc'}});
+    const steps=[
+      ['Checked the account and logs','Found the cause','Confirmed with the requester'],
+      ['Restarted the affected service','Service is running normally','Monitor for a day'],
+      ['Replaced the faulty cable','Connection restored','Keep the old cable for testing'],
+    ];
+    for(const [index,fixture] of fixtureTickets.entries()){
+      const count=index%4===0?1:index%4===1?3:0;
+      for(let n=0;n<count;n++){
+        const requestKey=`00000000-0000-4000-8000-${String(index*10+n+1).padStart(12,'0')}`;
+        const followUpRequired=n===count-1&&index%8===1;
+        await prisma.actionTaken.upsert({where:{ticketId_requestKey:{ticketId:fixture.id,requestKey}},update:{},create:{
+          ticketId:fixture.id,requestKey,performedById:performers[(index+n)%performers.length].id,
+          description:steps[n%3][0],result:steps[n%3][1],
+          followUpRequired,followUpNote:followUpRequired?'Check again in a few days':null,
+          attachmentNotes:n===0?'See the screenshot attached to the ticket':null,
+        }});
+      }
+    }
     for (const user of await prisma.user.findMany({where:{passwordHash:null}})) {
       await prisma.user.updateMany({where:{id:user.id,passwordHash:null},data:{passwordHash:await hashPassword(initialPassword),mustChangePassword:true}});
     }

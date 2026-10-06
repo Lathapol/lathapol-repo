@@ -249,3 +249,40 @@
 button:focus-visible, a:focus-visible { outline: 3px solid #006B3C; outline-offset: 3px; }
 .queue-nav button:focus-visible { outline-color: white; }
 .queue-nav button[aria-current="page"] { background: #EAF6EF; color: #006B3C; }
+
+.actions-taken .actions-table { margin-bottom: 0; }
+.actions-taken .entry-body { white-space: pre-wrap; overflow-wrap: anywhere; }
+.action-form { border: 1px solid #d5dfd8; border-radius: 8px; padding: 16px; margin: 16px 0; background: #fff; }
+.action-fields { display: grid; gap: 8px; min-width: 0; }
+.action-fields .action-check { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.readonly-field { background: #EDF1EE; border-radius: 4px; padding: 8px; }
+@media(max-width:991px) {
+  .actions-table thead { position: absolute; left: -9999px; }
+  .actions-table tr { display: block; border-top: 1px solid #d5dfd8; padding: 8px 0; }
+  .actions-table td { display: block; border: 0; padding: 4px 0; }
+  .actions-table td[data-label]::before { content: attr(data-label); display: block; font-weight: 600; font-size: .85rem; color: #4a5a4f; }
+}
+@media(max-width:767px) { .action-form .btn, .actions-table .btn { min-height: 44px; } }
+
+.dashboard-page { max-width: 1200px; }
+.dashboard-cards { display: grid; gap: 16px; grid-template-columns: repeat(3,minmax(0,1fr)); margin: 16px 0 24px; }
+.dashboard-card { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; text-align: left; background: #fff; border: 1px solid #d5dfd8; border-radius: 8px; padding: 16px; cursor: pointer; min-height: 44px; }
+.dashboard-card:hover { border-color: #006B3C; }
+.dashboard-card-label { font-weight: 600; }
+.dashboard-card-value { font-size: 2rem; font-weight: 700; color: #006B3C; }
+.dashboard-attention { background: #B3261E; color: #fff; }
+.dashboard-breakdown { list-style: none; padding: 0; margin: 0; }
+.dashboard-breakdown li { border-top: 1px solid #d5dfd8; }
+.dashboard-breakdown li:first-child { border-top: none; }
+.dashboard-list { list-style: none; padding: 0; margin: 0; }
+.dashboard-list li { border-top: 1px solid #d5dfd8; }
+.dashboard-list li:first-child { border-top: none; }
+.dashboard-row, .dashboard-breakdown .btn-link { display: flex; justify-content: space-between; align-items: center; width: 100%; padding: 8px 0; text-align: left; text-decoration: none; gap: 8px; min-height: 44px; flex-wrap: wrap; }
+.dashboard-row-time { color: #4a5a4f; font-size: .85rem; width: 100%; }
+.dashboard-filter-note { background: #EAF6EF; border-radius: 4px; padding: 8px 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+@media(max-width:991px) { .dashboard-cards { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:767px) { .dashboard-cards { grid-template-columns: 1fr; } }
+
+/* Bootstrap removes the outline on .btn:focus-visible (specificity beats the rule above); keep a clear ring for keyboard users. */
+.btn:focus-visible, .dashboard-card:focus-visible { outline: 3px solid #006B3C; outline-offset: 3px; }
+.navbar .btn:focus-visible, .queue-nav .btn:focus-visible { outline-color: #fff; }

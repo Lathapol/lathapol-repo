@@ -1,0 +1,9 @@
+
+ RUN  v4.1.10 C:/Users/User/Documents/GitHub/toktickit/client
+
+
+ Test Files  11 passed (11)
+      Tests  59 passed (59)
+   Start at  18:55:23
+   Duration  9.58s (transform 5.37s, setup 9.22s, import 8.70s, tests 15.72s, environment 51.76s)
+
