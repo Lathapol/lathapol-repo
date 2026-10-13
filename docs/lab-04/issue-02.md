@@ -17,4 +17,4 @@ Depends on #49 (contract, PR #56). Adds the ActionTaken table with an additive m
 
 Reproduce: create `toktickit_lab4_test` from the Lab 3 test database, run `npx prisma migrate deploy`, then from `server` run `node node_modules/jest/bin/jest.js --runInBand --testTimeout=15000` with `DATABASE_URL` pointing at it. Run `node scripts/verify-lab4-migration.cjs` from the repository root for the migration report.
 
-Peer review of issue 2 is pending. No full Lab 4 completion is claimed.
+Peer review: approved by Kittakorn-P and merged as PR #57 (see reviewer.md). Final-main results are recorded in tests.md.
