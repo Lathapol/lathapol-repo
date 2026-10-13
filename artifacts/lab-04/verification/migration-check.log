@@ -1,7 +1,7 @@
 {
-  "checkedAt": "2026-09-28T11:55:50.195Z",
+  "checkedAt": "2026-10-06T12:26:30.516Z",
   "sourceTemplate": "toktickit_lab3_test",
-  "evidenceDatabase": "toktickit_lab4_evidence_1790596538935",
+  "evidenceDatabase": "toktickit_lab4_evidence_1791289576896",
   "lab3Counts": {
     "RequesterUser": 26,
     "Ticket": 164,
@@ -29,8 +29,8 @@
     "one": 6,
     "many": 6
   },
-  "firstSeedDigest": "02cccb362b9ae3052364b5936e2982116e9f37fe4c791f2ed220663e1951821a",
-  "secondSeedDigest": "02cccb362b9ae3052364b5936e2982116e9f37fe4c791f2ed220663e1951821a",
+  "firstSeedDigest": "6377e4780c093a3bb1b6de3457ab7834abfd364d1d1e6ef464727149a9cc8d58",
+  "secondSeedDigest": "6377e4780c093a3bb1b6de3457ab7834abfd364d1d1e6ef464727149a9cc8d58",
   "repeatSeedUnchanged": true,
   "rollbackRestoredLab3": true,
   "rollbackDigest": "5edc5126cf0e51576114bbfb43bb2c7c6cf7f48a20070790de9efa692357b21f"
