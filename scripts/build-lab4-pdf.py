@@ -103,9 +103,12 @@ p('First-parent history of origin/main shows lab4-staging merged into main by PR
 story.append(Preformatted(run('log', 'origin/main', '--first-parent', '--format=%h %ad %s', '--date=short', '-4'), ParagraphStyle('G', fontName='Courier', fontSize=7.5, leading=9.5)))
 story.append(Preformatted(run('log', 'origin/lab4-staging', '--merges', '--format=%h %ad %s', '--date=short', '-9'), ParagraphStyle('G2', fontName='Courier', fontSize=7.5, leading=9.5)))
 p('Issues: #49 contract, #50 Actions Taken foundation, #51 Actions Taken UI, #52 workflow, #53 dashboards, #54 hardening, #55 release.')
-p('[GitHub Project](https://github.com/users/Lathapol/projects/3). GITHUB PROJECT SCREENSHOTS: insert the two board screenshots (top and bottom of the board) showing all Lab 4 issues in Done on the next two pages before submitting. They were not captured by the assistant because it cannot read the board.')
-for label in ['GitHub Project - top of board (INSERT SCREENSHOT)', 'GitHub Project - bottom of board (INSERT SCREENSHOT)']:
-    story.append(PageBreak()); p(label, 'Heading2'); story.append(Spacer(1, 400))
+p('[GitHub Project](https://github.com/users/Lathapol/projects/3). The Project board was filtered with the keyword Lab4 and shows all seven Lab 4 issues (#49-#55) in the Done column, plus the Issue 1 pull request card. Two unmodified screenshots taken on 26 October 2026 cover the Done column from top to bottom.')
+for img, label in [('board-top.jpg', 'GitHub Project - Done column, top (filter Lab4)'), ('board-bottom.jpg', 'GitHub Project - Done column, bottom (filter Lab4)')]:
+    story.append(PageBreak()); p(label, 'Heading2')
+    path = SHOTS / 'project-board' / img; iw, ih = Image.open(path).size
+    story.append(RLImage(str(path), width=483, height=ih * 483 / iw))
+    p('[Original screenshot](' + BASE + rel(path) + ')', 'SmallLab')
 p('Repository setup and structure', 'Heading2'); p('[README and directory tree](' + BASE + 'README.md)'); p('[Ignore rules](' + BASE + '.gitignore)'); p('[Environment example](' + BASE + 'server/.env.example)')
 p('Root: client/ (React UI), server/ (API, Prisma migrations and tests), e2e/ (browser tests), docs/lab-04/ (contract and review records), artifacts/lab-04/ (screenshots, migration report and verification logs), scripts/ (reproducible checks).')
 
