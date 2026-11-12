@@ -26,7 +26,17 @@ Server placeholders are in `server/.env.example`. Client placeholders are in `cl
 
 Use Node.js 24 and a PostgreSQL server. From the repository root run `npm ci --prefix server` and `npm ci --prefix client`. From `server/`, run `npx prisma generate`, `npx prisma migrate deploy`, and `npm run build`. Supply DATABASE_URL privately before migrations and runtime. Run `npm run seed` with LAB3_INITIAL_PASSWORD set privately when creating demo accounts. Existing passwords and account settings are preserved by the seed. Share demo credentials with the partner team privately.
 
-Run `npm run build` from `client/`. Start the API with `npm start` in `server/`. During development run `npm run dev` in `client/`. The Docker issue will package the UI and API for production hosting.
+Run `npm run build` from `client/`. Start the API with `npm start` in `server/`. During development run `npm run dev` in `client/`.
+
+## Docker operation
+
+From the repository root run `docker compose up --build -d --wait`. Open `http://localhost:4000`. The runtime serves both the built UI and API, and the browser uses relative API URLs. Compose starts PostgreSQL, waits for its health check, runs migrations successfully, and then starts the application. `GET /api/ready` checks database connectivity. Database data lives in a named volume. `docker compose down` retains that volume.
+
+Set LAB3_INITIAL_PASSWORD privately in your shell and run `docker compose run --rm -e LAB3_INITIAL_PASSWORD migrate node dist/prisma/seed.js` once to create demo accounts. The seed preserves existing account passwords. Sign in as `jennifer.anderson@example.com`, `staff@example.com`, or `admin@example.com` using the supplied initial password, then complete the required password change. Keep these values out of Git and screenshots.
+
+The Compose database password is a disposable local-only fixture, and the database has no host port. The app binds only to the host loopback address. Compose sets NODE_ENV=development for local HTTP cookies and APP_ORIGIN=http://localhost:4000. For Cloud Run use the image's NODE_ENV=production, the public HTTPS APP_ORIGIN and a Secret Manager database connection.
+
+The Dockerfile uses Node.js 24 and the lockfiles through npm ci. The final runtime runs as the node user with production server dependencies and compiled Prisma client, API and UI. The migration target retains Prisma CLI, migration SQL and compiled seed/import scripts. Build it with `docker build --target migration -t toktickit-migrate .`. Build the runtime with `docker build -t toktickit .`. `.dockerignore` excludes environment files, local uploads, generated clients, build results and node_modules so the container generates its own Linux-compatible Prisma output.
 
 For backend tests use a separate database whose name is exactly `toktickit_lab4_test`. Set DATABASE_URL to that isolated database, apply the migrations, seed fixtures, and run `npm test -- --runInBand --testTimeout=15000` from `server/`. Run `npm test` in `client/` for frontend tests. Existing browser verification instructions are in README.md and docs/lab-04/tests.md.
 
