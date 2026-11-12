@@ -7,6 +7,7 @@ import path from 'path';
 import {uploadDirectory} from '../../src/upload';
 let ticketId:number;
 beforeAll(async()=>{
+  fs.mkdirSync(uploadDirectory, { recursive: true });
   await prepareSessions();
   const ticket=await client().post('/api/tickets').send({requesterId:2,categoryId:1,relatedSystemId:1,summary:'Requester security test',description:'This fixture verifies requester authorization.',requestedPriority:'HIGH'});
   expect(ticket.status).toBe(201);expect(ticket.body.requesterId).toBe(1);ticketId=ticket.body.id;

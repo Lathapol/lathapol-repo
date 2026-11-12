@@ -5,6 +5,9 @@ afterAll(closeSessions);
 import path from "path";
 import fs from "fs";
 import app from "../../src/app";
+import { prisma } from '../../src/prisma';
+import { uploadDirectory } from '../../src/upload';
+import { execFileSync } from 'node:child_process';
 
 const testImagePath = path.join(__dirname, "test-fixtures", "sample.png");
 const testTextPath = path.join(__dirname, "test-fixtures", "sample.txt");
@@ -50,6 +53,9 @@ describe("Attachment lifecycle", () => {
     expect(res.status).toBe(201);
     expect(res.body.fileName).toBe("sample.png");
     expect(res.body.isRemoved).toBe(false);
+    const saved = await prisma.attachment.findUniqueOrThrow({ where: { id: res.body.id } });
+    expect(Buffer.from(saved.content!)).toEqual(fs.readFileSync(testImagePath));
+    expect(fs.existsSync(path.join(uploadDirectory, saved.storedName))).toBe(false);
   });
 
   it("rejects an unsupported file type", async () => {
@@ -74,6 +80,35 @@ describe("Attachment lifecycle", () => {
 
     const res = await client().get(`/api/attachments/${attachmentId}/download?requesterId=1`);
     expect(res.status).toBe(200);
+    expect(res.body).toEqual(fs.readFileSync(testImagePath));
+  });
+
+  it('downloads legacy disk files until they are imported', async () => {
+    fs.mkdirSync(uploadDirectory, { recursive: true });
+    const storedName = `legacy-${ticketId}.png`;
+    const legacyPath = path.join(uploadDirectory, storedName);
+    fs.copyFileSync(testImagePath, legacyPath);
+    const attachment = await prisma.attachment.create({ data: {
+      ticketId, storedName, fileName: 'legacy.png', fileType: 'image/png',
+      fileSize: fs.statSync(legacyPath).size,
+    } });
+    try {
+      const res = await client().get(`/api/attachments/${attachment.id}/download`);
+      expect(res.status).toBe(200);
+      expect(res.body).toEqual(fs.readFileSync(testImagePath));
+      for (let run = 0; run < 2; run++) {
+        execFileSync(process.execPath, [require.resolve('ts-node/dist/bin.js'), 'prisma/import-attachments.ts'], {
+          cwd: path.resolve(__dirname, '../..'), stdio: 'pipe',
+        });
+      }
+      fs.unlinkSync(legacyPath);
+      const imported = await client().get(`/api/attachments/${attachment.id}/download`);
+      expect(imported.status).toBe(200);
+      expect(imported.body).toEqual(fs.readFileSync(testImagePath));
+    } finally {
+      await prisma.attachment.delete({ where: { id: attachment.id } });
+      if (fs.existsSync(legacyPath)) fs.unlinkSync(legacyPath);
+    }
   });
 
   it("soft-removes an attachment with a reason", async () => {

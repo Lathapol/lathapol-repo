@@ -84,6 +84,7 @@ model Attachment {
   ticket        Ticket    @relation(fields: [ticketId], references: [id])
   fileName      String
   storedName    String
+  content       Bytes?
   fileType      String
   fileSize      Int
   isRemoved     Boolean   @default(false)

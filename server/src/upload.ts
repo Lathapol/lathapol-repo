@@ -1,21 +1,9 @@
 ﻿import multer from "multer";
 import path from "path";
-import crypto from "crypto";
-import fs from "fs";
 
 export const uploadDirectory = path.resolve(process.env.UPLOAD_DIRECTORY || 'uploads');
-fs.mkdirSync(uploadDirectory, {recursive:true});
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadDirectory);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = crypto.randomUUID();
-    const ext = path.extname(file.originalname);
-    cb(null, `${uniqueSuffix}${ext}`);
-  },
-});
+// Keep the old directory only for downloads of attachments created before Lab 5.
+const storage = multer.memoryStorage();
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
 

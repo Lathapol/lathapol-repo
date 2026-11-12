@@ -6,7 +6,7 @@ import { dashboardRouter } from './dashboard';
 import { groupStatuses, recentSince } from './dashboardGroups';
 import express from "express";
 import cors from "cors";
-import fs from "fs";
+import crypto from "crypto";
 import path from "path";
 import { prisma } from "./prisma";
 import { generateTicketNumber } from "./ticketNumber";
@@ -23,6 +23,15 @@ app.get("/api/health", (req, res) => {
     status: "ok",
     service: "TokTickIT API",
   });
+});
+
+app.get('/api/ready', async (_req, res) => {
+  try {
+    await prisma.$queryRaw`SELECT 1`;
+    res.json({ status: 'ok', database: 'connected' });
+  } catch {
+    res.status(503).json({ status: 'unavailable' });
+  }
 });
 
 app.use('/api', originGuard);
@@ -278,11 +287,10 @@ app.post("/api/tickets/:id/attachments", permit("REQUESTER"), async (req,res,nex
       const ticket=await tx.ticket.findFirst({where:{id:ticketId,requesterId:res.locals.user.id}});
       if(!ticket)throw Object.assign(new Error(),{code:'TICKET_NOT_FOUND'});
       if(await tx.attachment.count({where:{ticketId,isRemoved:false}})>=5)throw Object.assign(new Error(),{code:'MAX_ATTACHMENTS'});
-      return tx.attachment.create({data:{ticketId,fileName:file.originalname,storedName:file.filename,fileType:file.mimetype,fileSize:file.size}});
+      return tx.attachment.create({data:{ticketId,fileName:file.originalname,storedName:crypto.randomUUID(),content:file.buffer,fileType:file.mimetype,fileSize:file.size}});
     });
     res.status(201).json({id:attachment.id,fileName:attachment.fileName,fileType:attachment.fileType,fileSize:attachment.fileSize,isRemoved:attachment.isRemoved,uploadedAt:attachment.uploadedAt});
   }catch(error:any){
-    await fs.promises.unlink(file.path).catch(()=>{});
     if(error.code==='MAX_ATTACHMENTS')return res.status(400).json({error:{code:'MAX_ATTACHMENTS',message:'Maximum of 5 active attachments per ticket reached.'}});
     if(error.code==='TICKET_NOT_FOUND')return res.status(404).json({error:{code:'TICKET_NOT_FOUND',message:'Ticket not found.'}});
     res.status(500).json({error:{code:'SERVER_ERROR',message:'Failed to upload attachment.'}});
@@ -340,7 +348,16 @@ app.get("/api/attachments/:id/download", async (req, res) => {
       return res.status(410).json({ error: { code: "ATTACHMENT_REMOVED", message: "This attachment has been removed." } });
     }
 
-    const filePath = path.join(uploadDirectory, attachment.storedName);
+    if (attachment.content !== null) {
+      res.attachment(attachment.fileName);
+      res.type(attachment.fileType);
+      return res.send(Buffer.from(attachment.content));
+    }
+    // Older rows retain their local files until the import command is run.
+    const filePath = path.resolve(uploadDirectory, attachment.storedName);
+    if (path.dirname(filePath) !== uploadDirectory) {
+      return res.status(404).json({ error: { code: 'ATTACHMENT_NOT_FOUND', message: 'Attachment file not found.' } });
+    }
     res.download(filePath, attachment.fileName);
   } catch (err) {
     res.status(500).json({ error: { code: "SERVER_ERROR", message: "Failed to download attachment." } });
